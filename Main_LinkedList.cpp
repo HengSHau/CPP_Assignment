@@ -46,14 +46,41 @@ void loadDataFromCSV(string filename,FlightLinkedList&list){
 }
 
 int main() {
-    // 1. 创建链表对象
     FlightLinkedList myFlight;
 
     cout<<"1.Loading data from CSV"<<endl;
     loadDataFromCSV("flight_passenger_data.csv.csv",myFlight);
 
-    cout<<"\n2. Displaying Manifest (Check if data is there)"<<endl;
-    myFlight.displayManifest();
+    // cout<<"\n2. Displaying Manifest (Check if data is there)"<<endl;
+    // myFlight.displayManifest();
+
+    // 3. TEST: INPUT  data manually
+    cout<<"\n2. Adding a new Passenger (Manual Input)"<<endl;
+
+    Passenger p;
+
+    cout<<"Enter Passenger ID:";
+    cin>>p.passengerID;
+
+    cout<<"Enter Name (No Spaces):";
+    cin>>p.name;
+
+    cout<<"Enter Seat Row (e.g,10):";
+    cin>>p.seatRow;
+
+    cout<<"Enter Seat Column (e.g.,A):";
+    cin>>p.seatColumn;
+    
+    cout<<"Enter Class (e.g, First, Business, Economy): )";
+    cin>>p.pClass;
+
+    cout<<"\n Attempting to add passenger"<<endl;
+    bool result=myFlight.addPassenger(p);
+    if(result){
+        cout<<"Passenger: "<<p.name<<" added successfully."<<endl;
+    }else{
+        cout<<"Failed to add passenger: "<<p.name<<"Seat Taken or ID exists"<<endl;
+    }
 
     return 0;
 
