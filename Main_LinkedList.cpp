@@ -3,7 +3,6 @@
 #include<sstream>
 #include<string>
 
-
 #include "LinkedList.hpp" // 引入你的头文件
 
 using namespace std;
@@ -12,8 +11,8 @@ void loadDataFromCSV(string filename,FlightLinkedList&list){
     ifstream file(filename);
 
     if(!file.is_open()){
-        cout<<"Error: Cannot open file"<<filename<<"'"<<endl;
-        cout<<"Please check if the file is in the same folder as your.ext!!!"<<endl;
+        cout<<"Error: Cannot open file "<<filename<<"'"<<endl;
+        cout<<"Please check if the file is in the same folder as your.exe!!!"<<endl;
         return;
     }
 
@@ -49,12 +48,10 @@ int main() {
     FlightLinkedList myFlight;
 
     cout<<"1.Loading data from CSV"<<endl;
-    loadDataFromCSV("flight_passenger_data.csv.csv",myFlight);
+    loadDataFromCSV("flight_passenger_data.csv",myFlight);
 
-    // cout<<"\n2. Displaying Manifest (Check if data is there)"<<endl;
-    // myFlight.displayManifest();
 
-    // 3. TEST: INPUT  data manually
+    // 2. INPUT  data manually
     cout<<"\n2. Adding a new Passenger (Manual Input)"<<endl;
 
     Passenger p;
@@ -74,12 +71,12 @@ int main() {
     cout<<"Enter Class (e.g, First, Business, Economy): )";
     cin>>p.pClass;
 
-    cout<<"\n Attempting to add passenger"<<endl;
+    cout<<"\nAttempting to add passenger"<<endl;
     bool result=myFlight.addPassenger(p);
     if(result){
-        cout<<"Passenger: "<<p.name<<" added successfully."<<endl;
+        cout<<"Passenger: "<<p.name<<" added successfully.\n"<<endl;
     }else{
-        cout<<"Failed to add passenger: "<<p.name<<"Seat Taken or ID exists"<<endl;
+        cout<<"Failed to add passenger: "<<p.name<<" Seat Taken or ID exists.\n"<<endl;
     }
 
     return 0;
