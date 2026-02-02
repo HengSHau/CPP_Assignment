@@ -7,6 +7,16 @@
 
 using namespace std;
 
+string cleanID(string input){
+    string output="";
+    for(char c:input){
+        if(isalnum(c)){
+            output+=c;
+        }
+    }
+    return output;
+}
+
 void loadDataFromCSV(string filename,FlightLinkedList&list){
     ifstream file(filename);
 
@@ -27,10 +37,12 @@ void loadDataFromCSV(string filename,FlightLinkedList&list){
         if (line.empty()) continue;
 
         stringstream ss(line);
-        string segment;
         Passenger p;
 
-        getline(ss,p.passengerID,',');
+        string tempID;
+        getline(ss,tempID,',');        
+        p.passengerID=cleanID(tempID);
+
         getline(ss,p.name,',');
         getline(ss,p.seatRow,',');
         getline(ss,p.seatColumn,',');
@@ -41,7 +53,7 @@ void loadDataFromCSV(string filename,FlightLinkedList&list){
         count++;
     }
     file.close();
-    cout<<"-->Successfully loaded "<<count<<" Passenger from file."<<endl;
+    cout<<">Successfully loaded "<<count<<" Passenger from file."<<endl;
 }
 
 int main() {
@@ -50,9 +62,12 @@ int main() {
     cout<<"1.Loading data from CSV"<<endl;
     loadDataFromCSV("flight_passenger_data.csv",myFlight);
 
+    // cout << "\n=== DEBUG: Check String Lengths ===" << endl;
+    myFlight.displayManifest();
+
 
     // 2. INPUT  data manually
-    cout<<"\n2. Adding a new Passenger (Manual Input)"<<endl;
+    /*cout<<"\n2. Adding a new Passenger (Manual Input)"<<endl;
 
     Passenger p;
 
@@ -77,7 +92,17 @@ int main() {
         cout<<"Passenger: "<<p.name<<" added successfully.\n"<<endl;
     }else{
         cout<<"Failed to add passenger: "<<p.name<<" Seat Taken or ID exists.\n"<<endl;
-    }
+    }*/
+
+    cout<<"\n3. Remove a Passenger"<<endl;
+    string removeID;
+    cout<<"Enter the Passenger ID to remove (e.g.,100000): ";
+    cin>>removeID;
+
+    cout<<"Processing removal of Passenger ID: "<<removeID<<endl;
+    bool isRemoved=myFlight.removePassenger(removeID);
+
+
 
     return 0;
 

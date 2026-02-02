@@ -18,11 +18,12 @@ FlightLinkedList::~FlightLinkedList() {
     }
 }
 
-// TODO: Implement Reservation
+// TODO: Implement Reservation (Add Passenger)
 // Task: Create a new node, fill it with data, and link it to the head
 bool FlightLinkedList::addPassenger(Passenger p) {
     if(isSeatOccupied(p.seatRow, p.seatColumn)) {
-        cout<<"Error: Seat "<<p.seatRow<<p.seatColumn<<" is already occupied!"<<endl;
+       // cout<<"Error: Seat "<<p.seatRow<<p.seatColumn<<" is already occupied!"<<endl;
+
         return false; // Seat already taken
     }
 
@@ -39,39 +40,44 @@ bool FlightLinkedList::addPassenger(Passenger p) {
     return true; 
 }
 
-// TODO: Implement Cancellation
+// TODO: Implement Cancellation (Delete Passenger)
 // Task: Find the node with matching ID and remove it from the chain
 bool FlightLinkedList::removePassenger(string id) {
-    if(head==nullptr){
-        cout<<"Error: The list is empty. Cannot remove passenger."<<endl;
-        return false; // List is empty
+    // 1. 检查空链表
+    if(head == nullptr){
+        cout << "Error: The list is empty." << endl;
+        return false; 
     }
 
-    Node*current=head;
-    Node*previous=nullptr;
-
-    if(head->data.passengerID==id){
-        Node*nodeToDelete=head;
-        head=head->next;
+    // 2. 检查头节点 (Head)
+    if(head->data.passengerID == id){
+        Node* nodeToDelete = head;
+        head = head->next;
         delete nodeToDelete;
-        cout<<"Success: Passenger"<<id<<"is removed"<<endl;
+        cout << "Success: Passenger " << id << " is removed." << endl;
         return true;
     }
 
-    while(current !=nullptr&&current->data.passengerID!=id){
-        previous=current;
-        current=current->next;
+    Node* current = head;
+    Node* previous = nullptr;
+
+    // 3. 循环查找 (标准写法)
+    while(current != nullptr && current->data.passengerID != id){
+        previous = current;       
+        current = current->next;  
     }
 
-    if(current==nullptr){
-        cout<<"Error: Passenger ID"<<id<<"not found."<<endl;
+    // 4. 检查是否找到
+    if(current == nullptr){
+        cout << "Error: Passenger ID " << id << " not found." << endl;
         return false;
     }
-    previous->next=current->next;
-    delete current;
 
-    cout<<"Success: Passenger "<<id<<" is removed"<<endl;
+    // 5. 执行删除
+    previous->next = current->next; 
+    delete current;                 
 
+    cout << "Success: Passenger " << id << " is removed." << endl;
     return true;
 }
 
@@ -93,10 +99,12 @@ void FlightLinkedList::displayManifest() {
     cout << "--- Passenger Manifest ---" << endl;
     while (current != nullptr) {
         // Print details here: ID, Name, Seat
-        cout << current->data.passengerID << " : " << current->data.name << endl;
+        cout <<"[" <<current->data.passengerID << "] : " << current->data.name << endl;
         current = current->next;
     }
 }
+
+
 
 
 bool FlightLinkedList::isSeatOccupied(string row, string col) {
