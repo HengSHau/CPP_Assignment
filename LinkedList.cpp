@@ -20,7 +20,6 @@ FlightLinkedList::~FlightLinkedList() {
 }
 
 // TODO: Implement Reservation (Add Passenger)
-// Task: Create a new node, fill it with data, and link it to the head
 bool FlightLinkedList::addPassenger(Passenger p) {
     if(isSeatOccupied(p.seatRow, p.seatColumn)) {
        // cout<<"Error: Seat "<<p.seatRow<<p.seatColumn<<" is already occupied!"<<endl;
@@ -42,15 +41,14 @@ bool FlightLinkedList::addPassenger(Passenger p) {
 }
 
 // TODO: Implement Cancellation (Delete Passenger)
-// Task: Find the node with matching ID and remove it from the chain
 bool FlightLinkedList::removePassenger(string id) {
-    // 1. 检查空链表
+    // 1. check for empty list
     if(head == nullptr){
         cout << "Error: The list is empty." << endl;
         return false; 
     }
 
-    // 2. 检查头节点 (Head)
+    // 2. check head node
     if(head->data.passengerID == id){
         Node* nodeToDelete = head;
         head = head->next;
@@ -62,19 +60,19 @@ bool FlightLinkedList::removePassenger(string id) {
     Node* current = head;
     Node* previous = nullptr;
 
-    // 3. 循环查找 (标准写法)
+    // 3. loop to find passenger
     while(current != nullptr && current->data.passengerID != id){
         previous = current;       
         current = current->next;  
     }
 
-    // 4. 检查是否找到
+    // 4. check if passenger found
     if(current == nullptr){
         cout << "Error: Passenger ID " << id << " not found." << endl;
         return false;
     }
 
-    // 5. 执行删除
+    // 5. perform delete
     previous->next = current->next; 
     delete current;                 
 
