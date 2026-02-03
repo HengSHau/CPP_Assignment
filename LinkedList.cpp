@@ -1,5 +1,6 @@
 #include "LinkedList.hpp"
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -96,16 +97,51 @@ Passenger* FlightLinkedList::searchPassenger(string id) {
 // TODO: Implement Manifest
 void FlightLinkedList::displayManifest() {
     Node* current = head;
-    cout << "--- Passenger Manifest ---" << endl;
+    cout<<"\n========================================================" <<endl;
+    cout<<"               Flight Passenger Manifest                   "<<endl;
+    cout<<"\n========================================================" <<endl;
+    cout<< "ID      | Name                      | Seat  | Class" << endl;    
+    cout<<"--------------------------------------------------------" <<endl;
+    
     while (current != nullptr) {
-        // Print details here: ID, Name, Seat
-        cout <<"[" <<current->data.passengerID << "] : " << current->data.name << endl;
-        current = current->next;
+        string fullSeat=current->data.seatRow+current->data.seatColumn;
+        cout<<left<<setw(12)<<current->data.passengerID<<setw(25)<<current->data.name<<setw(8)<<fullSeat<<setw(15)<<current->data.pClass<<endl;
+        current=current->next;
     }
+    cout<<"========================================================\n" <<endl;
 }
 
+void FlightLinkedList::displaySeatingChart() {
+    int totalRows = 60; // Let's display 15 rows
+    char cols[] = {'A', 'B', 'C', 'D', 'E', 'F'};
 
+    cout << "\n============= SEATING CHART =============" << endl;
+    cout << "         A   B   C      D   E   F" << endl; 
 
+    for (int r = 1; r <= totalRows; r++) {
+        // Formatting row numbers (e.g., "Row 1 " vs "Row 10")
+        if(r < 10) cout << "Row " << r << " : ";
+        else       cout << "Row " << r << ": ";
+
+        // Loop through 6 columns (A-F)
+        for (int c = 0; c < 6; c++) {
+            string rowStr = to_string(r);      // Convert int 1 to string "1"
+            string colStr(1, cols[c]);         // Convert char 'A' to string "A"
+
+            // Add an aisle gap between C and D
+            if (c == 3) cout << "   "; 
+
+            // Check if someone is sitting here
+            if (isSeatOccupied(rowStr, colStr)) {
+                cout << "[X] "; // Occupied
+            } else {
+                cout << "[_] "; // Empty
+            }
+        }
+        cout << endl; // Move to next row
+    }
+    cout << "=========================================\n" << endl;
+}
 
 bool FlightLinkedList::isSeatOccupied(string row, string col) {
     Node* current = head; // Start at the front
