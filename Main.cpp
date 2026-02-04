@@ -341,7 +341,7 @@ void runLinkedListMode() {
 }
 
 void runBenchmark() {
-    cout << "\n=== PERFORMANCE COMPARISON ===" << endl;
+    cout << "\n=== PERFORMANCE COMPARISON (LOAD DATA)===" << endl;
     
     ArrayFlight arr;
     FlightLinkedList list;
@@ -378,8 +378,8 @@ int main() {
         cout << "==============================================" << endl;
         cout << "1. Run Array Implementation" << endl;
         cout << "2. Run Linked List Implementation" << endl;
-        cout << "3. Run Performance Benchmark" << endl;
-        cout << "0. Exit" << endl;
+        cout << "3. Run Performance Benchmark(Load Data)" << endl;
+        cout << "4. Exit" << endl;
         cout << "Select Mode: ";
         
         if (!(cin >> mode)) {
@@ -391,7 +391,9 @@ int main() {
             case 1: runArrayMode(); break;
             case 2: runLinkedListMode(); break;
             case 3: runBenchmark(); break;
-            case 0: cout << "Exiting..." << endl; break;
+            case 4: cout << "Exiting the System. Bye Bye!!" << endl; 
+                mode=0;
+                break;
             default: cout << "Invalid mode." << endl;
         }
     } while (mode != 0);
