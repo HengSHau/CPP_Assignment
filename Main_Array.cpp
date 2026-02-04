@@ -34,14 +34,14 @@ void loadData(ArrayFlight& flightSystem, string filename) {
 
         // Attempt to add to the system
         // Note: You might need to trim whitespace depending on your CSV format
-        if (!flightSystem.addPassenger(id, name, row, col, pClass)) {
-            // cout << "Warning: Could not add " << name << " (Duplicate or Full)" << endl;
+        if (!flightSystem.addPassengerSilent(id, name, row, col, pClass)) {
+            //cout << "Warning: Could not add " << name << " (Duplicate or Full)" << endl;
         } else {
             count++;
         }
     }
     
-    cout << "Data Loading Complete. " << count << " passengers loaded." << endl;
+    cout << "\nData Loading Complete. " << count << " passengers loaded." << endl;
     file.close();
 }
 
@@ -51,8 +51,8 @@ void printMenu() {
     cout << "2. View Passenger Manifest" << endl;
     cout << "3. Search for Passenger" << endl;
     cout << "4. Add New Reservation" << endl;
-    cout << "5. Cancel Reservation" << endl;
-    cout << "0. Exit" << endl;
+    cout << "5. Remove Reservation" << endl;
+    cout << "6. Exit" << endl;
     cout << "Enter choice: ";
 }
 
@@ -126,8 +126,9 @@ int main() {
             }
             break;
 
-        case 0:
-            cout << "Exiting system..." << endl;
+        case 6:
+            cout << "Exiting the system. ByeBye!" << endl;
+            choice=0;
             break;
 
         default:

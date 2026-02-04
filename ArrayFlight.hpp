@@ -10,9 +10,9 @@ using namespace std;
 class ArrayFlight {
 private:
     // Constants
-    static const int MAX_ROWS = 20; 
+    static const int MAX_ROWS = 30; 
     static const int MAX_COLS = 6;  
-    static const int MAX_PASSENGERS = 120;
+    static const int MAX_PASSENGERS = 180;
 
     // The Data Structures
     Passenger seatMap[MAX_ROWS][MAX_COLS];
@@ -23,6 +23,7 @@ public:
 
     // Core Functions
     bool addPassenger(string id, string name, string row, string col, string pClass);
+    bool addPassengerSilent(string id, string name, string row, string col, string pClass);
     bool removePassenger(string id);
     Passenger* searchPassenger(string id);
     void displayManifest();

@@ -129,3 +129,38 @@ void ArrayFlight::displaySeatMap(){
     }
     cout << "\nLegend: [X] = Occupied, [_] = Available\n" << endl;
 }
+
+// This is the EXACT same logic as addPassenger, but with NO cout statements
+bool ArrayFlight::addPassengerSilent(string id, string name, string rowStr, string colStr, string pClass) {
+    
+    // 1. Convert Row/Col to indices (Copy this part from your main addPassenger)
+    int r = stoi(rowStr) - 1; 
+    int c = colStr[0] - 'A'; 
+
+    // Safety Check
+    if (r < 0 || r >= MAX_ROWS || c < 0 || c >= MAX_COLS) {
+        return false; // Silent failure
+    }
+
+    // 2. Check if seat is taken
+    if (seatMap[r][c].passengerID != "") {
+        return false; // Silent failure (The seat is full, just skip it)
+    }
+
+    // 3. Add to 2D Array
+    seatMap[r][c].passengerID = id;
+    seatMap[r][c].name = name;
+    seatMap[r][c].seatRow = rowStr;
+    seatMap[r][c].seatColumn = colStr;
+    seatMap[r][c].pClass = pClass;
+
+    // 4. Add to 1D Array
+    for (int i = 0; i < MAX_PASSENGERS; i++) {
+        if (passengerList[i].passengerID == "") { 
+            passengerList[i] = seatMap[r][c]; 
+            return true;
+        }
+    }
+
+    return false;
+}
