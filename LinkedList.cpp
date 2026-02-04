@@ -94,19 +94,31 @@ Passenger* FlightLinkedList::searchPassenger(string id) {
 
 // TODO: Implement Manifest
 void FlightLinkedList::displayManifest() {
+
+    if(head == nullptr) {
+        cout << "\nFlightpassenger manifest is empty.\n" << endl;
+        return;
+    }
+
     Node* current = head;
+
+    int count=0;
+
     cout<<"\n========================================================" <<endl;
     cout<<"               Flight Passenger Manifest                   "<<endl;
     cout<<"\n========================================================" <<endl;
-    cout<< "ID      | Name                      | Seat  | Class" << endl;    
+    cout<<left<<setw(12)<<"PassengerID"<<setw(25)<<"Name"<<setw(8)<<"Seat"<<setw(15)<<"Class"<<endl;
     cout<<"--------------------------------------------------------" <<endl;
     
     while (current != nullptr) {
+        count++;
         string fullSeat=current->data.seatRow+current->data.seatColumn;
         cout<<left<<setw(12)<<current->data.passengerID<<setw(25)<<current->data.name<<setw(8)<<fullSeat<<setw(15)<<current->data.pClass<<endl;
         current=current->next;
     }
-    cout<<"========================================================\n" <<endl;
+    cout<<"========================================================" <<endl;
+    cout<<"Total Passengers on board: "<<count<<endl;
+    cout<<"========================================================" <<endl;
 }
 
 void FlightLinkedList::displaySeatingChart() {
