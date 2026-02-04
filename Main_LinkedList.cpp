@@ -4,7 +4,7 @@
 #include<string>
 #include<limits>
 
-#include "LinkedList.hpp" // 引入你的头文件
+#include "LinkedList.hpp" 
 
 using namespace std;
 
