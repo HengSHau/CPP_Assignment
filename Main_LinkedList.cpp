@@ -187,32 +187,63 @@ int main(){
                     cout<<"\n4. Adding a new Passenger (Manual Input)"<<endl;
 
                     Passenger p;
+                    int tempRow;
 
                     cout<<"Enter Passenger ID:";
                     cin>>p.passengerID;
+                    p.passengerID=cleanID(p.passengerID);
+
+                    if (myFlight.searchPassenger(p.passengerID) != nullptr) {
+                        cout << "\n ERROR: Passenger ID " << p.passengerID << " already exists!" << endl;
+                        cout << "Duplicate IDs are not allowed. Please try again.\n" << endl;
+                        break; 
+                    }
 
                     cout<<"Enter Name (No Spaces):";
                     cin>>p.name;
 
-                    cout<<"Enter Seat Row (e.g,10):";
-                    cin>>p.seatRow;
-
-                    cout<<"Enter Seat Column (e.g.,A):";
-                    cin>>p.seatColumn;
-    
-                    cout<<"Enter Class (e.g, First, Business, Economy): )";
-                    cin>>p.pClass;
-
-                    cout<<"\nAttempting to add passenger"<<endl;
-                    bool result=myFlight.addPassenger(p);
-                    
-                    if(result){
-                        cout<<"Passenger: "<<p.name<<" added successfully.\n"<<endl;
+                    cout<<"Enter Seat Row (1-30):";
+                    if(!(cin>>tempRow)){
+                        cout<<"\nError: Invalid input for Seat Row. Must be a number between 1-30."<<endl;
+                        cin.clear();
+                        cin.ignore(numeric_limits<streamsize>::max(),'\n');
+                        break;
+                    }
+                    if(tempRow>=1&&tempRow<=3){
+                        p.pClass="First";
+                    }
+                    else if(tempRow>=4&&tempRow<=10){
+                        p.pClass="Business";
+                    }
+                    else if(tempRow>=11&&tempRow<=30){
+                        p.pClass="Economy";
                     }else{
-                        cout<<"Failed to add passenger: "<<p.name<<" Seat Taken or ID exists.\n"<<endl;
+                        cout<<"\nError: Seat Row must be between 1 and 30."<<endl;
+                        break;
+                    }
+
+                    p.seatRow=to_string(tempRow);
+                    cout << "--> System Auto-Assigned Class: " << p.pClass << endl;
+                    
+                    cout<<"Enter Seat Column (A-F):";
+                    cin>>p.seatColumn;
+
+                    for (char &c : p.seatColumn) {
+                        c = toupper(c);
+                    }
+
+                    if(myFlight.addPassenger(p)){
+                        cout << "--> Success: Passenger added to " << p.pClass << "Class." << endl;
+                    }else{
+                        cout << "\n--------------------------------------------------" << endl;
+                        cout << "FAILED: Seat " << p.seatRow << p.seatColumn << " is currently OCCUPIED." << endl;
+                        cout << "ACTION REQUIRED: Please go to Menu Option 5 (Remove)" << endl;
+                        cout << "to remove the passenger at this seat first." << endl;
+                        cout << "--------------------------------------------------" << endl;
                     }
                 }
                 break;
+
             case 5:
                 {
                     cout<<"\n3. Remove a Passenger"<<endl;
@@ -228,7 +259,7 @@ int main(){
                 cout<<"Exiting the system. ByeBye!"<<endl;
                 break;
             default:
-                cout<<"\nError: Ivanlid Choice!! Please select a number between 1-6."<<endl;
+                cout<<"\nError: Ivalid Choice!! Please select a number between 1-6."<<endl;
         }
     }
 

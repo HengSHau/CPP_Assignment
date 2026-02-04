@@ -110,7 +110,7 @@ void FlightLinkedList::displayManifest() {
 }
 
 void FlightLinkedList::displaySeatingChart() {
-    int totalRows = 60; // Let's display 15 rows
+    int totalRows = 30; 
     char cols[] = {'A', 'B', 'C', 'D', 'E', 'F'};
 
     cout << "\n============= SEATING CHART =============" << endl;
