@@ -150,3 +150,51 @@ void FlightLinkedList::displayAll() {
     cout << "------------------------------------------------------------\n";
     cout << "Total Passengers: " << count << endl;
 }
+
+
+// === SEATING CHART (Visual Grid) ===
+void FlightLinkedList::displaySeatingChart(int flightNum) {
+    if (flightNum < 1 || flightNum > 100) {
+        cout << "Error: Invalid Flight Number (1-100).\n";
+        return;
+    }
+
+    // 1. Create a temporary mini-grid for just this flight (30 rows, 6 cols)
+    // Initialize all to false (Empty)
+    bool tempGrid[30][6] = {false};
+
+    // 2. Scan the list and mark occupied seats
+    Node* current = head;
+    while (current != nullptr) {
+        if (current->data.flightNumber == flightNum) {
+            // Parse Row (String to Index)
+            int r = stoi(current->data.seatRow) - 1;
+            // Parse Col (Char to Index)
+            int c = toupper(current->data.seatColumn[0]) - 'A';
+            
+            if (r >= 0 && r < 30 && c >= 0 && c < 6) {
+                tempGrid[r][c] = true; // Mark as occupied
+            }
+        }
+        current = current->next;
+    }
+
+    // 3. Print the Grid
+    cout << "\n=== SEATING CHART: FLIGHT " << flightNum << " ===\n";
+    cout << "      A   B   C   D   E   F\n";
+    cout << "    -------------------------\n";
+
+    for (int i = 0; i < 30; i++) {
+        cout << left << setw(3) << (i + 1) << "|"; // Row Number
+        for (int j = 0; j < 6; j++) {
+            if (tempGrid[i][j]) {
+                cout << "[X] ";
+            } else {
+                cout << "[ ] ";
+            }
+        }
+        cout << endl;
+    }
+    cout << "    -------------------------\n";
+    cout << "    [X] = Occupied, [ ] = Empty\n";
+}

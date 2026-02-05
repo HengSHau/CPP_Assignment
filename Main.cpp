@@ -347,7 +347,8 @@ int main() {
         cout<<"2. Add New Passenger"<<endl;
         cout<<"3. Search Passenger (by Row/Column)"<<endl;
         cout<<"4. Display All Passengers\n";
-        cout<< "0. Exit"<<endl;
+        cout<<"5. Display Seating Chart (by Flight Number)"<<endl;
+        cout<<"0. Exit"<<endl;
         cout<< "Enter choice: ";
         cin>>choice;
 
@@ -364,6 +365,14 @@ int main() {
             case 4:
                 displayAllPassengers(); 
                 break;
+            case 5: {
+                int flightNum;
+                cout<<"Enter Flight Number (1-100:)";
+                cin>>flightNum;
+
+                globalArray.displaySeatingChart(flightNum);
+                break;
+            }
             case 0: 
                 break;
             default: cout << "Invalid choice." << endl;

@@ -158,3 +158,37 @@ void ArrayFlight::displayAll() {
     cout << "Total Passengers: " << count << endl;
 }
 
+// === SEATING CHART (Visual Grid) ===
+void ArrayFlight::displaySeatingChart(int flightNum) {
+    if (flightNum<1 || flightNum > 100) {
+        cout << "Error: Invalid Flight Number (1-100).\n";
+        return;
+    }
+
+    cout<<"\n=== SEATING CHART: FLIGHT "<<flightNum<<" ===\n";
+    cout<<"     A   B   C   D   E   F\n"; // Header
+    cout<<"    -------------------------\n";
+
+    // Calculate where this flight starts in the big array
+    // Flight 1 starts at row 0. Flight 2 starts at row 30.
+    int startRow = (flightNum - 1) * 30;
+    int endRow = startRow + 30;
+
+    for (int i = startRow; i < endRow; i++) {
+        // Print Row Number (e.g., "1 ", "10")
+        int actualRow=(i % 30) + 1;
+        cout<<left << setw(3)<<actualRow<<"|";
+
+        for (int j = 0; j < COLS; j++) {
+            if (seatMap[i][j].passengerID != "") {
+                cout << "[X] "; // Occupied
+            } else {
+                cout << "[ ] "; // Empty
+            }
+        }
+        cout << endl;
+    }
+    cout << "    -------------------------\n";
+    cout << "    [X] = Occupied, [ ] = Empty\n";
+}
+

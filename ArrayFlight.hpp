@@ -23,6 +23,7 @@ public:
     
     Passenger* binarySearch(string id); 
     void displayAll(); 
+    void displaySeatingChart(int flightNum);
 };
 
 #endif
