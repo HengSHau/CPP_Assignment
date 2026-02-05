@@ -319,26 +319,50 @@ void searchPassenger() {
     }
 }
 
+void displayAllPassengers() {
+    int choice;
+    cout << "\n=== DISPLAY ALL PASSENGERS (TRAVERSAL) ===" << endl;
+    cout << "1. Display using Array Traversal" << endl;
+    cout << "2. Display using Linked List Traversal" << endl;
+    cout << "Enter choice: ";
+    cin >> choice;
+
+    if (choice == 1) {
+        globalArray.displayAll();
+    } else if (choice == 2) {
+        globalList.displayAll();
+    } else {
+        cout << "Invalid choice.\n";
+    }
+}
+
 int main() {
     // Load Data Once at Startup
     loadFileToBuffer("flight_passenger_data.csv");
 
     int choice;
     do {
-        cout << "\n=== AIRLINE SYSTEM MENU ===" << endl;
-        cout << "1. Run Bulk Benchmark (Import data)" << endl;
-        cout << "2. Add New Passenger" << endl;
-        cout << "3. Search Passenger (by Row/Column)" << endl;
-        cout << "0. Exit" << endl;
-        cout << "Enter choice: ";
-        cin >> choice;
+        cout<<"\n=== AIRLINE SYSTEM MENU ==="<< endl;
+        cout<<"1. Run Bulk Benchmark (Import data)"<<endl;
+        cout<<"2. Add New Passenger"<<endl;
+        cout<<"3. Search Passenger (by Row/Column)"<<endl;
+        cout<<"4. Display All Passengers\n";
+        cout<< "0. Exit"<<endl;
+        cout<< "Enter choice: ";
+        cin>>choice;
 
         switch(choice) {
-            case 1: runImportBenchmark(); 
+            case 1:   
+                runImportBenchmark(); 
                 break;
-            case 2: addNewPassenger(); 
+            case 2: 
+                addNewPassenger(); 
                 break;
-            case 3: searchPassenger(); 
+            case 3: 
+                searchPassenger(); 
+                break;
+            case 4:
+                displayAllPassengers(); 
                 break;
             case 0: 
                 break;

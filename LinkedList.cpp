@@ -1,4 +1,5 @@
 #include "LinkedList.hpp"
+#include<iomanip>
 
 FlightLinkedList::FlightLinkedList() { 
     head = nullptr; 
@@ -122,4 +123,30 @@ void FlightLinkedList::searchByColumn(string col) {
         current = current->next;
     }
     if (!found) cout << "   - No passengers found.\n";
+}
+
+// === TRAVERSAL (Display All) ===
+void FlightLinkedList::displayAll() {
+    cout<<"\n=== ALL PASSENGERS (Linked List Traversal) ===\n";
+    
+    // Header
+    cout<<left << setw(10)<<"ID"<<setw(20)<<"Name"<< setw(10)  << "Seat"<<setw(12) << "Class"<<setw(10)<<"Flight"<<endl;
+
+    cout << "------------------------------------------------------------\n";
+
+    Node* current = head; 
+    int count = 0;
+
+    while (current != nullptr) {
+        cout << left << setw(10) << current->data.passengerID 
+             << setw(20) << current->data.name 
+             << setw(10)  << (current->data.seatRow + current->data.seatColumn)
+             << setw(12) << current->data.pClass 
+             << setw(10)  << current->data.flightNumber << endl;
+        
+        current = current->next; 
+        count++;
+    }
+    cout << "------------------------------------------------------------\n";
+    cout << "Total Passengers: " << count << endl;
 }

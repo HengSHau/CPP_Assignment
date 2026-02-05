@@ -1,4 +1,6 @@
 #include "ArrayFlight.hpp"
+#include<iomanip>
+
 
 using namespace std;
 
@@ -132,5 +134,27 @@ void ArrayFlight::searchByColumn(string col) {
         }
     }
     if (!found) cout << "   - No passengers found.\n";
+}
+
+// === TRAVERSAL (Display All) ===
+void ArrayFlight::displayAll() {
+    cout << "\n=== ALL PASSENGERS (Array Traversal) ===\n";
+    
+    // Fixed Header Spacing
+    cout << left<<setw(10)<<"ID"<<setw(20)<<"Name"<<setw(10)<<"Seat"<<setw(12)<<"Class"<<setw(10)<<"Flight"<<endl;
+         
+    cout << "------------------------------------------------------------\n";
+    
+    int count = 0;
+    for (int i = 0; i < TOTAL_ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if (seatMap[i][j].passengerID != "") {
+                cout<<left<<setw(10)<<seatMap[i][j].passengerID<<setw(20)<<seatMap[i][j].name<<setw(10)<<(seatMap[i][j].seatRow + seatMap[i][j].seatColumn)<<setw(12) << seatMap[i][j].pClass<<setw(10) << seatMap[i][j].flightNumber << endl;
+                count++;
+            }
+        }
+    }
+    cout << "------------------------------------------------------------\n";
+    cout << "Total Passengers: " << count << endl;
 }
 

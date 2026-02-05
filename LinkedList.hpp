@@ -24,6 +24,7 @@ public:
     void searchByColumn(string col);
 
     Passenger* binarySearch(string id);
+    void displayAll(); 
 };
 
 #endif
