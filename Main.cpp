@@ -1,453 +1,356 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
 #include <chrono> 
-#include <limits> // Required for numeric_limits
-#include <cctype> // Required for toupper
+#include <string>
+#include <cctype>
 
-// HEADER FILES
-#include "ArrayFlight.hpp"
-#include "LinkedList.hpp" 
+#include "Passenger.hpp"
+#include "ArrayFlight.hpp"   
+#include "LinkedList.hpp"    
 
 using namespace std;
 using namespace std::chrono;
 
-// ==========================================
-// 1. DATA LOADING FUNCTIONS
-// ==========================================
+// --- GLOBAL STORAGE (Dynamic Array) ---
+Passenger* fileBuffer = nullptr; 
+int dataSize = 0;                
+bool isDataLoaded = false;
 
-// Loader for ARRAY
-void loadDataArray(ArrayFlight& system, string filename) {
+// --- GLOBAL SYSTEMS (For Manual Operations) ---
+// These persist so you can add passengers one by one and keep the data.
+ArrayFlight globalArray;
+FlightLinkedList globalList;
+
+// Registry to track seat assignments
+bool seatRegistry[100][30][6] = {false}; 
+
+
+void loadFileToBuffer(string filename) {
+    if (isDataLoaded) return; 
+
     ifstream file(filename);
-    if (!file.is_open()) return;
+    if (!file.is_open()) {
+        cout << "Error: CSV file not found." << endl;
+        return;
+    }
+
+    // 1. Count Lines first to allocate exact memory
+    string line;
+    getline(file, line); // Skip header
+    int lineCount = 0;
+    while (getline(file, line)) lineCount++;
+
+    // 2. Allocate Memory (Dynamic Array)
+    dataSize = lineCount;
+    fileBuffer = new Passenger[dataSize]; 
+
+    // 3. Reset File and Read Data
+    file.clear(); 
+    file.seekg(0); 
+    getline(file, line); // Skip header
+
+    cout << "System: Loading " << dataSize << " records..." << endl;
     
-    string line, id, name, row, col, pClass;
-    getline(file, line); // Skip header
-
+    int i = 0;
     while (getline(file, line)) {
         stringstream ss(line);
+        string id, name, rowStr, colStr, pClass;
         getline(ss, id, ',');
         getline(ss, name, ',');
-        getline(ss, row, ',');
-        getline(ss, col, ',');
+        getline(ss, rowStr, ',');
+        getline(ss, colStr, ',');
         getline(ss, pClass, ',');
 
-        system.addPassengerSilent(id, name, row, col, pClass);
+        int r = stoi(rowStr) - 1;
+        int c = toupper(colStr[0]) - 'A';
+        int flight = 1;
+
+        // Auto-assign flight logic
+        while (true) {
+            if (!seatRegistry[flight][r][c]) {
+                seatRegistry[flight][r][c] = true;
+                break;
+            }
+            flight++;
+        }
+
+        Passenger p = {id, name, rowStr, colStr, pClass, flight};
+        
+        // Store in Buffer
+        fileBuffer[i] = p; 
+        
+        // Also populate Global Systems (So Manual Add works on full data)
+        globalArray.addPassenger(p);
+        globalList.addPassenger(p);
+        
+        i++;
     }
+    
+    // Sort global systems initially
+    globalArray.insertionSort();
+    globalList.insertionSort();
+    
     file.close();
+    isDataLoaded = true;
+    cout << "System: Data Loaded & Sorted. Ready for operations.\n";
 }
 
-// Loader for LINKED LIST
-void loadDataLinkedList(FlightLinkedList& system, string filename) {
-    ifstream file(filename);
-    if (!file.is_open()) return;
+// =============================================================
+// OPTION 1: BULK IMPORT BENCHMARK (0 -> 10,000)
+// =============================================================
+void runImportBenchmark() {
+    cout << "\n[ Starting Bulk Import Benchmark... ]" << endl;
 
-    string line, id, name, row, col, pClass;
-    getline(file, line); // Skip header
+    // FIX: Use Heap Allocation (new) to prevent Stack Overflow crash
+    ArrayFlight* testArray = new ArrayFlight();
+    FlightLinkedList* testList = new FlightLinkedList();
 
-    while (getline(file, line)) {
-        stringstream ss(line);
-        getline(ss, id, ',');
-        getline(ss, name, ',');
-        getline(ss, row, ',');
-        getline(ss, col, ',');
-        getline(ss, pClass, ',');
 
-        Passenger p;
-        p.passengerID = id;
-        p.name = name;
-        p.seatRow = row;
-        p.seatColumn = col;
-        p.pClass = pClass;
-
-        system.addPassenger(p);
+    // Measure Array Import
+    auto start = high_resolution_clock::now();
+    for (int i = 0; i < dataSize; i++) {
+        testArray->addPassenger(fileBuffer[i]);
     }
-    file.close();
-    system.sortPassengers();
+    auto stop = high_resolution_clock::now();
+    auto arrayImportTime = duration_cast<milliseconds>(stop - start).count();
+
+    // Measure Linked List Import
+    start = high_resolution_clock::now();
+    for (int i = 0; i < dataSize; i++) {
+        testList->addPassenger(fileBuffer[i]);
+    }
+    stop = high_resolution_clock::now();
+    auto listImportTime = duration_cast<milliseconds>(stop - start).count();
+
+
+    // Measure Array Sort
+    start = high_resolution_clock::now();
+    testArray->insertionSort();
+    stop = high_resolution_clock::now();
+    auto arraySortTime = duration_cast<milliseconds>(stop - start).count();
+
+    // Measure Linked List Sort
+    start = high_resolution_clock::now();
+    testList->insertionSort();
+    stop = high_resolution_clock::now();
+    // Use Microseconds for List because it is very fast
+    auto listSortTime = duration_cast<microseconds>(stop - start).count();
+
+    cout << "\n=== BULK RESULTS ===" << endl;
+    cout << "Array Import: " << arrayImportTime << " ms | Sort: " << arraySortTime << " ms" << endl;
+    cout << "List Import:  " << listImportTime << " ms | Sort: " << listSortTime << " us" << endl;
+
+    // Clean up heap memory
+    delete testArray;
+    delete testList;
 }
 
-// ==========================================
-// 2. DRIVER MODES
-// ==========================================
-
-void runArrayMode() {
-    ArrayFlight flight;
-    cout << "\n[Loading Array System...]" << endl;
-    loadDataArray(flight, "flight_passenger_data.csv");
-    cout << "Data Loaded (180 Passengers Limit)." << endl;
-
-    int choice;
+// =============================================================
+// OPTION 2: ADD SINGLE PASSENGER (Manual Time Test)
+// =============================================================
+void addNewPassenger() {
     string id, name, row, col, pClass;
     
-    do {
-        cout << "\n--- ARRAY SYSTEM MENU ---" << endl;
-        cout << "1. View Map" << endl;
-        cout << "2. View Manifest" << endl;
-        cout << "3. Search" << endl;
-        cout << "4. Add Reservation" << endl;
-        cout << "5. Remove Reservation" << endl;
-        cout << "6. Back to Main Menu" << endl;
-        cout << "Choice: ";
-        
-        if (!(cin >> choice)) { 
-            cin.clear(); cin.ignore(10000, '\n'); 
-            continue; 
+    cout << "\n=== ADD NEW PASSENGER ===" << endl;
+    while(true){
+        cout<<"Enter Passenger ID: "; 
+        cin>>id;
+
+        if (globalArray.binarySearch(id) != nullptr) {
+            cout << "Error: ID exists." << endl;
+        } 
+        else {
+            break; // Unique
         }
+    }
 
-        // USING SWITCH CASE HERE
-        switch (choice) {
-            case 1:
-                flight.displaySeatMap();
-                break;
-
-            case 2:
-                flight.displayManifest();
-                break;
-
-            case 3: 
-                int searchType;
-                cout << "\nSearch/Filter Mode:" << endl;
-                cout << "1. Search by ID" << endl;
-                cout << "2. Filter by Row (1-30)" << endl;
-                cout << "3. Filter by Column (A-F)" << endl;
-                cout << "Choice: ";
-                cin >> searchType;
-
-                if (searchType == 1) {
-                    // --- EXISTING ID SEARCH ---
-                    cout << "Enter ID: "; cin >> id;
-                    auto start = high_resolution_clock::now();
-                    Passenger* p = flight.searchPassenger(id);
-                    auto stop = high_resolution_clock::now();
-                    
-                    if (p != nullptr) cout << "Found: " << p->name << " at " << p->seatRow << p->seatColumn << endl;
-                    else cout << "Not Found." << endl;
-                    
-                    auto duration = duration_cast<nanoseconds>(stop - start);
-                    cout << "(Time: " << duration.count() << " ns)" << endl;
-
-                } else if (searchType == 2) {
-                    // --- ROW FILTER ---
-                    cout << "Enter Row (1-30): "; cin >> row;
-                    
-                    auto start = high_resolution_clock::now();
-                    flight.filterByRow(row);
-                    auto stop = high_resolution_clock::now();
-                    
-                    auto duration = duration_cast<nanoseconds>(stop - start);
-                    cout << "(Time: " << duration.count() << " ns)" << endl;
-
-                } else if (searchType == 3) {
-                    // --- COLUMN FILTER ---
-                    cout << "Enter Column (A-F): "; cin >> col;
-                    
-                    auto start = high_resolution_clock::now();
-                    flight.filterByColumn(col);
-                    auto stop = high_resolution_clock::now();
-                    
-                    auto duration = duration_cast<nanoseconds>(stop - start);
-                    cout << "(Time: " << duration.count() << " ns)" << endl;
-                }
-                break;
-
-            case 4:
-                cout << "Enter ID: "; cin >> id;
-                cout << "Enter Name: "; cin.ignore(); getline(cin, name);
-                cout << "Enter Row (1-30): "; cin >> row;
-                cout << "Enter Column (A-F): "; cin >> col;
-                cout << "Enter Class: "; cin >> pClass;
+    cout << "Enter Name: "; cin.ignore(); getline(cin, name);
+    
+    while(true) {
+        cout << "Enter Row (1-30): "; cin >> row;
+        try {
+            int rowNum = stoi(row);
+            if (rowNum >= 1 && rowNum <= 30) {
+                // Determine Class
+                if (rowNum >= 1 && rowNum <= 3) pClass = "First";
+                else if (rowNum >= 4 && rowNum <= 10) pClass = "Business";
+                else pClass = "Economy";
                 
-                {
-                    auto start = high_resolution_clock::now();
-                    
-                    // 2. RUN LOGIC
-                    bool success = flight.addPassenger(id, name, row, col, pClass);
-                    
-                    // 3. STOP TIMER
-                    auto stop = high_resolution_clock::now();
-                    auto duration = duration_cast<nanoseconds>(stop - start);
-                    
-                    // 4. PRINT
-                    if(success) 
-                        cout << "Success. ";
-                    else 
-                        cout << "Failed. ";
-
-                    cout << "(Time taken: " << duration.count() << " ns)" << endl;
-                }
-                break;
-
-            case 5:
-                cout << "Enter ID to remove: ";
-                cin >> id;
-                {
-                    auto start = high_resolution_clock::now();
-
-                    // 2. EXECUTE REMOVAL
-                    bool removed = flight.removePassenger(id);
-
-                    // 3. STOP TIMER
-                    auto stop = high_resolution_clock::now();
-                    auto duration = duration_cast<nanoseconds>(stop - start);
-
-                    // 4. PRINT RESULT + TIME
-                    if (removed)
-                        cout << "Success: Passenger removed. ";
-                    else
-                        cout << "Failed: Passenger not found. ";
-
-                    cout << "(Time taken: " << duration.count() << " ns)" << endl;
-                }
-                break;
-
-            case 6:
-                choice=0;
-                break; // Exits the loop
-
-            default:
-                cout << "Invalid option. Please try again." << endl;
+                cout << ">> System detected Class: " << pClass << endl;
+                break; // Valid Row
+            } else {
+                cout << "Error: Row must be between 1 and 30.\n";
+            }
+        } catch (...) {
+            cout << "Error: Please enter a valid number.\n";
         }
+    }
 
-    } while (choice != 0);
+    // 3. Get Column Input
+    while (true) {
+        cout << "Enter Col (A-F): "; cin >> col;
+        
+        // Normalize input
+        char c = toupper(col[0]);
+        
+        // Check if single character AND between A-F
+        if (col.length() == 1 && c >= 'A' && c <= 'F') {
+            col = string(1, c); // Ensure it's uppercase stored
+            break; // Valid!
+        } else {
+            cout << "Error: Invalid Seat. Only columns A, B, C, D, E, F are allowed." << endl;
+        }
+    }
+    int r=stoi(row)-1;
+    int c=toupper(col[0])-'A';
+    int flight = 1;
+
+    while (true) {
+        if (!seatRegistry[flight][r][c]) {
+            // Found it!
+            seatRegistry[flight][r][c] = true; // Mark as taken
+            break;
+        }
+        flight++; // Try next flight
+    }
+
+    
+    
+    cout << ">> Assigned to Flight " << flight << endl;
+
+    Passenger p = {id, name, row, col, pClass, flight};
+
+    cout << "\nAdding Passenger to System..." << endl;
+
+    // --- MEASURE ARRAY ADD ---
+    auto start = high_resolution_clock::now();
+    globalArray.addPassenger(p); // RAW ADD
+    auto stop = high_resolution_clock::now();
+    auto arrayTime = duration_cast<nanoseconds>(stop - start).count();
+    
+    // Sort Array Immediately (Outside Timer)
+    globalArray.insertionSort();
+
+    // --- MEASURE LIST ADD ---
+    start = high_resolution_clock::now();
+    globalList.addPassenger(p); // RAW ADD
+    stop = high_resolution_clock::now();
+    auto listTime = duration_cast<nanoseconds>(stop - start).count();
+
+    // Sort List Immediately (Outside Timer)
+    globalList.insertionSort();
+
+    cout << "\n=== ADD RESULTS ===" << endl;
+    cout << "Array Add Time:      " << arrayTime << " nanoseconds" << endl;
+    cout << "Linked List Add Time:" << listTime << " nanoseconds" << endl;
 }
 
-void runLinkedListMode() {
-    FlightLinkedList flight; // Variable name is 'flight'
-    cout << "\n[Loading Linked List System...]" << endl;
-    loadDataLinkedList(flight, "flight_passenger_data.csv");
-    cout << "Data Loaded." << endl;
+void searchPassenger() {
+    int choice;
+    string query;
+
+    cout << "\n=== SEARCH MENU ===" << endl;
+    cout << "1. Search by ID (Binary Search)" << endl;
+    cout << "2. Search by Row (Linear Search)" << endl;
+    cout << "3. Search by Column (Linear Search)" << endl;
+    cout << "Enter choice: ";
+    cin >> choice;
+
+    if (choice == 1) {
+        // --- 1. ID SEARCH (BINARY) ---
+        cout << "Enter Passenger ID: "; cin >> query;
+        
+        cout << "\n[ Binary Search Benchmark ]" << endl;
+        
+        // Measure Array
+        auto start = high_resolution_clock::now();
+        Passenger* p1 = globalArray.binarySearch(query);
+        auto stop = high_resolution_clock::now();
+        auto t1 = duration_cast<nanoseconds>(stop - start).count();
+
+        // Measure List
+        start = high_resolution_clock::now();
+        Passenger* p2 = globalList.binarySearch(query);
+        stop = high_resolution_clock::now();
+        auto t2 = duration_cast<nanoseconds>(stop - start).count();
+
+        if(p1) cout << "Found: " << p1->name << endl;
+        else cout << "Not Found." << endl;
+
+        cout << "Time: Array=" << t1 << "ns | List=" << t2 << "ns" << endl;
+    }
+    else if (choice == 2) {
+        // --- 2. ROW SEARCH (LINEAR) ---
+        cout << "Enter Row (1-30): "; cin >> query;
+        
+        cout << "\n[ Linear Search Benchmark ]" << endl;
+
+        auto start = high_resolution_clock::now();
+        globalArray.searchByRow(query);
+        auto stop = high_resolution_clock::now();
+        auto t1 = duration_cast<nanoseconds>(stop - start).count();
+
+        start = high_resolution_clock::now();
+        globalList.searchByRow(query);
+        stop = high_resolution_clock::now();
+        auto t2 = duration_cast<nanoseconds>(stop - start).count();
+
+        cout << "Time: Array=" << t1 << "ns | List=" << t2 << "ns" << endl;
+    }
+    else if (choice == 3) {
+        // --- 3. COLUMN SEARCH (LINEAR) ---
+        cout << "Enter Col (A-F): "; cin >> query;
+        if(query.length()>0) query[0] = toupper(query[0]);
+
+        cout << "\n[ Linear Search Benchmark ]" << endl;
+
+        auto start = high_resolution_clock::now();
+        globalArray.searchByColumn(query);
+        auto stop = high_resolution_clock::now();
+        auto t1 = duration_cast<nanoseconds>(stop - start).count();
+
+        start = high_resolution_clock::now();
+        globalList.searchByColumn(query);
+        stop = high_resolution_clock::now();
+        auto t2 = duration_cast<nanoseconds>(stop - start).count();
+
+        cout << "Time: Array=" << t1 << "ns | List=" << t2 << "ns" << endl;
+    }
+}
+
+int main() {
+    // Load Data Once at Startup
+    loadFileToBuffer("flight_passenger_data.csv");
 
     int choice;
-    string id; 
-    
     do {
-        cout << "\n--- LINKED LIST MENU ---" << endl;
-        cout << "1. Display Passenger Manifest (List)" << endl;
-        cout << "2. Display Seating Chart" << endl;
-        cout << "3. Search Passenger" << endl;   
-        cout << "4. Add Passenger" << endl;
-        cout << "5. Remove Passenger" << endl;
-        cout << "6. Exit to Main Menu" << endl; // NOTE: Case 6 exits loop, but main loop handles actual exit
-        cout << "Please enter your choice: ";
+        cout << "\n=== AIRLINE SYSTEM MENU ===" << endl;
+        cout << "1. Run Bulk Benchmark (Import data)" << endl;
+        cout << "2. Add New Passenger" << endl;
+        cout << "3. Search Passenger (by Row/Column)" << endl;
+        cout << "0. Exit" << endl;
+        cout << "Enter choice: ";
+        cin >> choice;
 
-        if (!(cin >> choice)) { cin.clear(); cin.ignore(10000, '\n'); continue; }
-
-        switch(choice){
-            case 1:
-                flight.displayManifest(); // Fixed: changed myFlight to flight
+        switch(choice) {
+            case 1: runImportBenchmark(); 
                 break;
-            case 2:
-                flight.displaySeatingChart(); // Fixed: changed myFlight to flight
+            case 2: addNewPassenger(); 
                 break;
-            case 3:
-                { 
-                    string searchType;
-                    cout<<"\nSearch/Filter Mode:"<<endl;
-                    cout<<"1. Search by ID"<<endl;
-                    cout<<"2. Filter by Row (1-30)"<<endl;
-                    cout<<"3. Filter by Column (A-F)"<<endl;
-                    cout<<"Choice: ";
-                    cin>>searchType;
-                    
-                    if(searchType=="1"){
-                        cout<<"Enter ID to search (e.g.,100000): ";
-                        cin>>id;
-                        auto start = high_resolution_clock::now();
-                        Passenger* p = flight.searchPassengerBinary(id); 
-                        auto stop = high_resolution_clock::now();
-                        auto duration = duration_cast<nanoseconds>(stop - start);
-                        if(p!=nullptr){
-                            cout<<"Passenger Found!"<<endl;
-                            cout<<"ID: "<<p->passengerID<<endl;
-                            cout<<"Name: "<<p->name<<endl;
-                            cout<<"Seat: "<<p->seatRow<<p->seatColumn<<endl;
-                            cout<<"Class: "<<p->pClass<<endl;
-                        } else {
-                            cout<<"Passenger ID "<<id<<" Not Found!!"<<endl;
-                        }
-                        cout<<"(Search Time: "<<duration.count()<<" ns)"<<endl;
-
-                    }else if(searchType=="2"){
-                        string row;
-                        cout<<"Enter Row to filter (1-30): ";
-                        cin>>row;
-                        auto start = high_resolution_clock::now();
-                        flight.filterByRow(row);
-                        auto stop = high_resolution_clock::now();
-                        auto duration = duration_cast<nanoseconds>(stop - start);
-                        cout<<"(Filter Time: "<<duration.count()<<" ns)"<<endl;
-
-                    
-
-                    } else if(searchType=="3"){
-                        string col;
-                        cout<<"Enter Column to filter (A-F): ";
-                        cin>>col;
-                        auto start = high_resolution_clock::now();
-                        flight.filterByColumn(col);
-                        auto stop = high_resolution_clock::now();
-                        auto duration = duration_cast<nanoseconds>(stop - start);
-                        cout<<"(Filter Time: "<<duration.count()<<" ns)"<<endl;
-                    }
-                    break;
-                }    
-                case 4:        
-                {
-                    cout << "\n4. Adding a new Passenger (Manual Input)" << endl;
-
-                    Passenger p;
-                    int tempRow;
-
-                    cout << "Enter Passenger ID: ";
-                    cin >> p.passengerID;
-                    // Removed undefined cleanID function
-
-                    // Fixed: changed myFlight to flight
-                    if (flight.searchPassenger(p.passengerID) != nullptr) {
-                        cout << "\n ERROR: Passenger ID " << p.passengerID << " already exists!" << endl;
-                        cout << "Duplicate IDs are not allowed. Please try again.\n" << endl;
-                        break; 
-                    }
-
-                    cout << "Enter Name (No Spaces): ";
-                    cin >> p.name;
-
-                    cout << "Enter Seat Row (1-30): ";
-                    if(!(cin >> tempRow)){
-                        cout << "\nError: Invalid input for Seat Row. Must be a number between 1-30." << endl;
-                        cin.clear();
-                        cin.ignore(numeric_limits<streamsize>::max(),'\n');
-                        break;
-                    }
-                    
-                    // Logic to auto-assign class
-                    if(tempRow >= 1 && tempRow <= 3) p.pClass = "First";
-                    else if(tempRow >= 4 && tempRow <= 10) p.pClass = "Business";
-                    else if(tempRow >= 11 && tempRow <= 30) p.pClass = "Economy";
-                    else {
-                        cout << "\nError: Seat Row must be between 1 and 30." << endl;
-                        break;
-                    }
-
-                    p.seatRow = to_string(tempRow);
-                    cout << "--> System Auto-Assigned Class: " << p.pClass << endl;
-                    
-                    cout << "Enter Seat Column (A-F): ";
-                    cin >> p.seatColumn;
-
-                    for (char &c : p.seatColumn) {
-                        c = toupper(c);
-                    }
-
-                    auto start = high_resolution_clock::now();
-
-                    bool success=flight.addPassenger(p);
-
-                    auto stop = high_resolution_clock::now();
-                    auto duration = duration_cast<nanoseconds>(stop - start);
-
-                    // Fixed: changed myFlight to flight
-                    if(success){
-                        cout << "--> Success: Passenger added to " << p.pClass << " Class." << endl;
-                    } else {
-                        cout << "\n--------------------------------------------------" << endl;
-                        cout << "FAILED: Seat " << p.seatRow << p.seatColumn << " is currently OCCUPIED." << endl;
-                        cout << "--------------------------------------------------" << endl;
-                    }
-                    cout << "(Time taken: " << duration.count() << " ns)" << endl;
-                }
+            case 3: searchPassenger(); 
                 break;
-
-            case 5:
-                {
-                    cout << "\n5. Remove a Passenger" << endl;
-                    string removeID;
-                    cout << "Enter the Passenger ID to remove: ";
-                    cin >> removeID;
-
-                    auto start = high_resolution_clock::now();
-
-                    // Fixed: changed myFlight to flight
-                    bool isRemoved = flight.removePassenger(removeID);
-
-                    auto stop = high_resolution_clock::now();
-                    auto duration = duration_cast<nanoseconds>(stop - start);
-
-                    if(isRemoved){
-                        cout << "Success: Passenger ID " << removeID << " has been removed." << endl;
-                    } else {
-                        cout << "Error: Passenger ID " << removeID << " not found." << endl;
-                    }
-                    cout << "(Time taken: " << duration.count() << " ns)" << endl;
-                }
+            case 0: 
                 break;
-            case 6:
-                choice=0;
-                break;
-            default:
-                cout << "\nError: Invalid Choice!! Please select a number between 1-6." << endl;
+            default: cout << "Invalid choice." << endl;
         }
+
     } while (choice != 0);
-}
 
-void runBenchmark() {
-    cout << "\n=== PERFORMANCE COMPARISON (LOAD DATA)===" << endl;
+    // Clean up Global Buffer
+    if (fileBuffer != nullptr) {
+        delete[] fileBuffer;
+    }
     
-    ArrayFlight arr;
-    FlightLinkedList list;
-
-    // Measure Array
-    auto start = high_resolution_clock::now();
-    loadDataArray(arr, "flight_passenger_data.csv");
-    auto stop = high_resolution_clock::now();
-    auto durationArr = duration_cast<microseconds>(stop - start);
-
-    // Measure Linked List
-    start = high_resolution_clock::now();
-    loadDataLinkedList(list, "flight_passenger_data.csv");
-    stop = high_resolution_clock::now();
-    auto durationList = duration_cast<microseconds>(stop - start);
-
-    cout << "Array Load Time:       " << durationArr.count() << " microseconds" << endl;
-    cout << "Linked List Load Time: " << durationList.count() << " microseconds" << endl;
-    
-    if (durationArr.count() < durationList.count())
-        cout << ">> Array was faster." << endl;
-    else
-        cout << ">> Linked List was faster." << endl;
-}
-
-// ==========================================
-// 3. MAIN ENTRY POINT
-// ==========================================
-int main() {
-    int mode;
-    do {
-        cout << "\n==============================================" << endl;
-        cout << "   FLIGHT SYSTEM MASTER DRIVER" << endl;
-        cout << "==============================================" << endl;
-        cout << "1. Run Array Implementation" << endl;
-        cout << "2. Run Linked List Implementation" << endl;
-        cout << "3. Run Performance Benchmark(Load Data)" << endl;
-        cout << "4. Exit" << endl;
-        cout << "Select Mode: ";
-        
-        if (!(cin >> mode)) {
-            cin.clear(); cin.ignore(10000, '\n'); 
-            continue;
-        }
-
-        switch (mode) {
-            case 1: runArrayMode(); break;
-            case 2: runLinkedListMode(); break;
-            case 3: runBenchmark(); break;
-            case 4: cout << "Exiting the System. Bye Bye!!" << endl; 
-                mode=0;
-                break;
-            default: cout << "Invalid mode." << endl;
-        }
-    } while (mode != 0);
-
     return 0;
 }

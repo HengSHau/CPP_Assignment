@@ -13,6 +13,7 @@ struct Passenger {
     string seatRow;    // Keeping as string to handle inputs easily
     string seatColumn; // Keeping as string or char
     string pClass;     // "First", "Business", "Economy"
+    int flightNumber;
 };
 
 #endif

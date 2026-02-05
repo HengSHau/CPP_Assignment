@@ -1,35 +1,27 @@
 #ifndef ARRAYFLIGHT_HPP
 #define ARRAYFLIGHT_HPP
 
-#include <string>
-#include <iostream>
-#include "Passenger.hpp" 
+#include "Passenger.hpp"
+#include <iomanip>
 
-using namespace std;
+// Capable of holding ~100 flights (100 * 30 rows = 3000 rows)
+const int TOTAL_ROWS = 3000; 
+const int COLS = 6;
 
 class ArrayFlight {
 private:
-    // Constants
-    static const int MAX_ROWS = 30; 
-    static const int MAX_COLS = 6;  
-    static const int MAX_PASSENGERS = 180;
-
-    // The Data Structures
-    Passenger seatMap[MAX_ROWS][MAX_COLS];
-    Passenger passengerList[MAX_PASSENGERS];
+    Passenger seatMap[TOTAL_ROWS][COLS]; 
 
 public:
-    ArrayFlight(); // Constructor
+    ArrayFlight();
+    
+    void addPassenger(Passenger p); // Finds the first free flight
+    void insertionSort(); // THE MATCHING SORT ALGORITHM
 
-    // Core Functions
-    bool addPassenger(string id, string name, string row, string col, string pClass);
-    bool addPassengerSilent(string id, string name, string row, string col, string pClass);
-    bool removePassenger(string id);
-    Passenger* searchPassenger(string id);
-    void displayManifest();
-    void displaySeatMap();
-    void filterByRow(string row); 
-    void filterByColumn(string col);
+    void searchByRow(string row);
+    void searchByColumn(string col);
+    
+    Passenger* binarySearch(string id); 
 };
 
 #endif
