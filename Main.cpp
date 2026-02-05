@@ -253,7 +253,7 @@ void runLinkedListMode() {
                     // Removed undefined cleanID function
 
                     // Fixed: changed myFlight to flight
-                    if (flight.searchPassenger(p.passengerID) != nullptr) {
+                    if (flight.searchPassengerBinary(p.passengerID) != nullptr) {
                         cout << "\n ERROR: Passenger ID " << p.passengerID << " already exists!" << endl;
                         cout << "Duplicate IDs are not allowed. Please try again.\n" << endl;
                         break; 

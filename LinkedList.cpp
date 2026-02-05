@@ -92,6 +92,26 @@ Passenger* FlightLinkedList::searchPassenger(string id) {
     return nullptr; // Not found
 }
 
+Passenger* FlightLinkedList::searchPassengerBinary(const std::string& id) {
+    Node* start = head;
+    Node* end = nullptr; // end is exclusive: search range is [start, end)
+
+    while (start != end) {
+        // find middle between start and end
+        Node* slow = start;
+        Node* fast = start;
+        while (fast != end && fast->next != end) {
+            fast = fast->next->next;
+            slow = slow->next;
+        }
+
+        if (slow->data.passengerID == id) return &slow->data;
+        if (slow->data.passengerID < id) start = slow->next;
+        else end = slow;
+    }
+    return nullptr;
+}
+
 // TODO: Implement Manifest
 void FlightLinkedList::displayManifest() {
 

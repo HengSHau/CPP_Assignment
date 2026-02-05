@@ -26,6 +26,7 @@ public:
     Passenger* searchPassenger(string id);   // Seat Lookup (Search)
     void displayManifest();                  // Manifest Report (Traversal)
     void displaySeatingChart();              // Seating Chart Display
+    Passenger* searchPassengerBinary(const std::string& id); // Optional: Binary Search
     
     // Helper to check if a seat is already taken
     bool isSeatOccupied(string row, string col);
