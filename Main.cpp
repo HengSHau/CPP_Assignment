@@ -64,6 +64,7 @@ void loadDataLinkedList(FlightLinkedList& system, string filename) {
         system.addPassenger(p);
     }
     file.close();
+    system.sortPassengers();
 }
 
 // ==========================================
@@ -104,25 +105,49 @@ void runArrayMode() {
                 flight.displayManifest();
                 break;
 
-            case 3:
-                cout << "Enter ID: "; cin >> id;
-                { 
+            case 3: 
+                int searchType;
+                cout << "\nSearch/Filter Mode:" << endl;
+                cout << "1. Search by ID" << endl;
+                cout << "2. Filter by Row (1-30)" << endl;
+                cout << "3. Filter by Column (A-F)" << endl;
+                cout << "Choice: ";
+                cin >> searchType;
+
+                if (searchType == 1) {
+                    // --- EXISTING ID SEARCH ---
+                    cout << "Enter ID: "; cin >> id;
                     auto start = high_resolution_clock::now();
-                    
-                    // 2. RUN THE ACTUAL FUNCTION
-                    bool found = (flight.searchPassenger(id) != nullptr);
-
-                    // 3. STOP TIMER (Immediately after function returns)
+                    Passenger* p = flight.searchPassenger(id);
                     auto stop = high_resolution_clock::now();
-                    auto duration = duration_cast<nanoseconds>(stop - start);
-
-                    // 4. PRINT RESULTS
-                    if (found) 
-                        cout << "Found! ";
-                    else 
-                        cout << "Not Found. ";
                     
-                    cout << "(Time taken: " << duration.count() << " ns)" << endl;
+                    if (p != nullptr) cout << "Found: " << p->name << " at " << p->seatRow << p->seatColumn << endl;
+                    else cout << "Not Found." << endl;
+                    
+                    auto duration = duration_cast<nanoseconds>(stop - start);
+                    cout << "(Time: " << duration.count() << " ns)" << endl;
+
+                } else if (searchType == 2) {
+                    // --- ROW FILTER ---
+                    cout << "Enter Row (1-30): "; cin >> row;
+                    
+                    auto start = high_resolution_clock::now();
+                    flight.filterByRow(row);
+                    auto stop = high_resolution_clock::now();
+                    
+                    auto duration = duration_cast<nanoseconds>(stop - start);
+                    cout << "(Time: " << duration.count() << " ns)" << endl;
+
+                } else if (searchType == 3) {
+                    // --- COLUMN FILTER ---
+                    cout << "Enter Column (A-F): "; cin >> col;
+                    
+                    auto start = high_resolution_clock::now();
+                    flight.filterByColumn(col);
+                    auto stop = high_resolution_clock::now();
+                    
+                    auto duration = duration_cast<nanoseconds>(stop - start);
+                    cout << "(Time: " << duration.count() << " ns)" << endl;
                 }
                 break;
 
@@ -217,31 +242,57 @@ void runLinkedListMode() {
                 break;
             case 3:
                 { 
-                    string searchID;
-                    cout << "Enter the Passenger ID you want to search (e.g.,100000):";
-                    cin >> searchID;
-                    // Removed undefined cleanID function
+                    string searchType;
+                    cout<<"\nSearch/Filter Mode:"<<endl;
+                    cout<<"1. Search by ID"<<endl;
+                    cout<<"2. Filter by Row (1-30)"<<endl;
+                    cout<<"3. Filter by Column (A-F)"<<endl;
+                    cout<<"Choice: ";
+                    cin>>searchType;
+                    
+                    if(searchType=="1"){
+                        cout<<"Enter ID to search (e.g.,100000): ";
+                        cin>>id;
+                        auto start = high_resolution_clock::now();
+                        Passenger* p = flight.searchPassengerBinary(id); 
+                        auto stop = high_resolution_clock::now();
+                        auto duration = duration_cast<nanoseconds>(stop - start);
+                        if(p!=nullptr){
+                            cout<<"Passenger Found!"<<endl;
+                            cout<<"ID: "<<p->passengerID<<endl;
+                            cout<<"Name: "<<p->name<<endl;
+                            cout<<"Seat: "<<p->seatRow<<p->seatColumn<<endl;
+                            cout<<"Class: "<<p->pClass<<endl;
+                        } else {
+                            cout<<"Passenger ID "<<id<<" Not Found!!"<<endl;
+                        }
+                        cout<<"(Search Time: "<<duration.count()<<" ns)"<<endl;
 
-                    auto start = high_resolution_clock::now();
-                
-                    Passenger* p = flight.searchPassenger(searchID); // Fixed: changed myFlight to flight
+                    }else if(searchType=="2"){
+                        string row;
+                        cout<<"Enter Row to filter (1-30): ";
+                        cin>>row;
+                        auto start = high_resolution_clock::now();
+                        flight.filterByRow(row);
+                        auto stop = high_resolution_clock::now();
+                        auto duration = duration_cast<nanoseconds>(stop - start);
+                        cout<<"(Filter Time: "<<duration.count()<<" ns)"<<endl;
 
-                    auto stop = high_resolution_clock::now();
-                    auto duration = duration_cast<nanoseconds>(stop - start);
+                    
 
-                    if(p != nullptr){
-                        cout << "Passenger Found!" << endl;
-                        cout << "ID: " << p->passengerID << endl;
-                        cout << "Name: " << p->name << endl;
-                        cout << "Seat: " << p->seatRow << p->seatColumn << endl;
-                        cout << "Class: " << p->pClass << endl;
-                    } else {
-                        cout << "Passenger ID " << searchID << " Not Found!!" << endl;
+                    } else if(searchType=="3"){
+                        string col;
+                        cout<<"Enter Column to filter (A-F): ";
+                        cin>>col;
+                        auto start = high_resolution_clock::now();
+                        flight.filterByColumn(col);
+                        auto stop = high_resolution_clock::now();
+                        auto duration = duration_cast<nanoseconds>(stop - start);
+                        cout<<"(Filter Time: "<<duration.count()<<" ns)"<<endl;
                     }
-                    cout << "(Search Time: " << duration.count() << " ns)" << endl;
-                }
-                break;
-            case 4:        
+                    break;
+                }    
+                case 4:        
                 {
                     cout << "\n4. Adding a new Passenger (Manual Input)" << endl;
 
@@ -253,7 +304,7 @@ void runLinkedListMode() {
                     // Removed undefined cleanID function
 
                     // Fixed: changed myFlight to flight
-                    if (flight.searchPassengerBinary(p.passengerID) != nullptr) {
+                    if (flight.searchPassenger(p.passengerID) != nullptr) {
                         cout << "\n ERROR: Passenger ID " << p.passengerID << " already exists!" << endl;
                         cout << "Duplicate IDs are not allowed. Please try again.\n" << endl;
                         break; 

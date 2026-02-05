@@ -28,6 +28,8 @@ public:
     Passenger* searchPassenger(string id);
     void displayManifest();
     void displaySeatMap();
+    void filterByRow(string row); 
+    void filterByColumn(string col);
 };
 
 #endif

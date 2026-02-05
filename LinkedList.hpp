@@ -12,6 +12,7 @@ struct Node {
 class FlightLinkedList {
 private:
     Node* head; // The start of the list
+    void sortedInsert(Node*& head_ref, Node* newNode); // Helper for binary search insertion
 
 public:
     // Constructor
@@ -27,9 +28,13 @@ public:
     void displayManifest();                  // Manifest Report (Traversal)
     void displaySeatingChart();              // Seating Chart Display
     Passenger* searchPassengerBinary(const std::string& id); // Optional: Binary Search
+    void filterByRow(string row);
+    void filterByColumn(string col);
     
     // Helper to check if a seat is already taken
     bool isSeatOccupied(string row, string col);
+
+    void sortPassengers();
 };
 
 #endif

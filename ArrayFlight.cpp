@@ -164,3 +164,59 @@ bool ArrayFlight::addPassengerSilent(string id, string name, string rowStr, stri
 
     return false;
 }
+
+void ArrayFlight::filterByRow(string rowStr) {
+    // 1. Convert user input "1" to index 0
+    int r = stoi(rowStr) - 1; 
+
+    // 2. Safety Check
+    if (r < 0 || r >= MAX_ROWS) {
+        cout << "Error: Invalid Row (Must be 1-30)." << endl;
+        return;
+    }
+
+    cout << "\n--- PASSENGERS IN ROW " << rowStr << " ---" << endl;
+    bool found = false;
+
+    // 3. Loop through columns A to F (0 to 5)
+    for (int c = 0; c < MAX_COLS; c++) {
+        // If passengerID is NOT empty, someone is sitting here
+        if (seatMap[r][c].passengerID != "") {
+            cout << "[Seat " << rowStr << seatMap[r][c].seatColumn << "] " 
+                 << seatMap[r][c].name 
+                 << " (ID: " << seatMap[r][c].passengerID << ")" << endl;
+            found = true;
+        }
+    }
+
+    if (!found) cout << "(This row is completely empty)" << endl;
+    cout << "-----------------------------" << endl;
+}
+
+void ArrayFlight::filterByColumn(string colStr) {
+    // 1. Convert user input "A" to index 0
+    char colChar = toupper(colStr[0]);
+    int c = colChar - 'A'; 
+
+    // 2. Safety Check
+    if (c < 0 || c >= MAX_COLS) {
+        cout << "Error: Invalid Column (Must be A-F)." << endl;
+        return;
+    }
+
+    cout << "\n--- PASSENGERS IN COLUMN " << colChar << " ---" << endl;
+    bool found = false;
+
+    // 3. Loop through rows 1 to 30 (0 to 29)
+    for (int r = 0; r < MAX_ROWS; r++) {
+        if (seatMap[r][c].passengerID != "") {
+            cout << "[Seat " << (r + 1) << colChar << "] " 
+                 << seatMap[r][c].name 
+                 << " (ID: " << seatMap[r][c].passengerID << ")" << endl;
+            found = true;
+        }
+    }
+
+    if (!found) cout << "(This column is completely empty)" << endl;
+    cout << "--------------------------------" << endl;
+}

@@ -19,6 +19,49 @@ FlightLinkedList::~FlightLinkedList() {
     }
 }
 
+void FlightLinkedList::sortPassengers() {
+    Node* current = head;
+    Node* sorted = nullptr; // This will become our new sorted list
+
+    while (current != nullptr) {
+        // Save the next node so we don't lose track of the old list
+        Node* next = current->next;
+
+        // Insert 'current' into the 'sorted' list
+        sortedInsert(sorted, current);
+
+        // Move to the next item
+        current = next;
+    }
+
+    // Update the real head to point to the new sorted list
+    head = sorted;
+    cout << "--> System: Linked List has been sorted by ID (Insertion Sort)." << endl;
+}
+
+// 2. HELPER FUNCTION (Finds the right spot)
+void FlightLinkedList::sortedInsert(Node*& head_ref, Node* newNode) {
+    Node* current;
+
+    // Case 1: The list is empty OR the new node goes at the very FRONT (Smallest ID)
+    if (head_ref == nullptr || newNode->data.passengerID < head_ref->data.passengerID) {
+        newNode->next = head_ref;
+        head_ref = newNode;
+    }
+    else {
+        // Case 2: Traverse the list to find the insertion point
+        current = head_ref;
+        while (current->next != nullptr && 
+               current->next->data.passengerID < newNode->data.passengerID) {
+            current = current->next;
+        }
+        
+        // Insert newNode after 'current'
+        newNode->next = current->next;
+        current->next = newNode;
+    }
+}
+
 // TODO: Implement Reservation (Add Passenger)
 bool FlightLinkedList::addPassenger(Passenger p) {
     if(isSeatOccupied(p.seatRow, p.seatColumn)) {
@@ -186,4 +229,60 @@ bool FlightLinkedList::isSeatOccupied(string row, string col) {
     }
     
     return false; // We checked everyone, and the seat is free
+}
+
+void FlightLinkedList::filterByRow(string targetRow) {
+    if (head == nullptr) {
+        cout << "List is empty." << endl;
+        return;
+    }
+
+    cout << "\n--- PASSENGERS IN ROW " << targetRow << " ---" << endl;
+    Node* current = head;
+    bool found = false;
+
+    // We must traverse the ENTIRE list because passengers are scattered
+    while (current != nullptr) {
+        if (current->data.seatRow == targetRow) {
+            cout << "[Seat " << current->data.seatRow << current->data.seatColumn << "] " 
+                 << current->data.name 
+                 << " (ID: " << current->data.passengerID << ")" << endl;
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found) cout << "(No passengers found in this row)" << endl;
+    cout << "-----------------------------" << endl;
+}
+
+void FlightLinkedList::filterByColumn(string targetCol) {
+    if (head == nullptr) {
+        cout << "List is empty." << endl;
+        return;
+    }
+
+    // Ensure target is uppercase for comparison
+    char targetChar = toupper(targetCol[0]);
+    string colStr(1, targetChar);
+
+    cout << "\n--- PASSENGERS IN COLUMN " << colStr << " ---" << endl;
+    Node* current = head;
+    bool found = false;
+
+    while (current != nullptr) {
+        // Compare the first character of the column string
+        char seatColChar = toupper(current->data.seatColumn[0]);
+        
+        if (seatColChar == targetChar) {
+            cout << "[Seat " << current->data.seatRow << current->data.seatColumn << "] " 
+                 << current->data.name 
+                 << " (ID: " << current->data.passengerID << ")" << endl;
+            found = true;
+        }
+        current = current->next;
+    }
+
+    if (!found) cout << "(No passengers found in this column)" << endl;
+    cout << "--------------------------------" << endl;
 }
