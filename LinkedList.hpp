@@ -2,6 +2,11 @@
 #define LINKEDLIST_HPP
 
 #include "Passenger.hpp"
+#include <iostream>
+#include <string>
+#include <iomanip>
+
+using namespace std;
 
 struct Node {
     Passenger data;

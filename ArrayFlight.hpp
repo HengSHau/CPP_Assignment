@@ -2,7 +2,11 @@
 #define ARRAYFLIGHT_HPP
 
 #include "Passenger.hpp"
+#include <iostream>
+#include <string>
 #include <iomanip>
+
+using namespace std;
 
 // Capable of holding ~100 flights (100 * 30 rows = 3000 rows)
 const int TOTAL_ROWS = 3000; 

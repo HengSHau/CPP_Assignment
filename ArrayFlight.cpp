@@ -1,6 +1,6 @@
 #include "ArrayFlight.hpp"
-#include<iomanip>
-
+#include <iomanip>
+#include <iostream>
 
 using namespace std;
 
@@ -18,7 +18,6 @@ void ArrayFlight::addPassenger(Passenger p) {
     int c = toupper(p.seatColumn[0]) - 'A';
     
     // 3. Calculate Global Index based on Flight Number
-    // Flight 1 starts at 0, Flight 2 starts at 30, etc.
     int globalRow = ((p.flightNumber - 1) * 30) + r;
 
     // 4. Write data to memory
@@ -26,7 +25,6 @@ void ArrayFlight::addPassenger(Passenger p) {
         seatMap[globalRow][c] = p;
     }
 }
-
 
 void ArrayFlight::insertionSort() {
     int n = TOTAL_ROWS * COLS;
@@ -47,8 +45,7 @@ void ArrayFlight::insertionSort() {
             int r_prev = j / COLS;
             int c_prev = j % COLS;
             
-            // If prev is empty, or prev > key, we swap/move
-            // Note: We want to pack empty seats to the end, or sort IDs
+            // Check if Prev is Empty OR Prev > Key
             if (seatMap[r_prev][c_prev].passengerID == "" || 
                (seatMap[r_prev][c_prev].passengerID > key.passengerID && seatMap[r_prev][c_prev].passengerID != "")) {
                 
@@ -61,12 +58,9 @@ void ArrayFlight::insertionSort() {
             } else {
                 break;
             }
-            int r_dest=(j+1)/COLS;
-            int c_dest=(j+1)%COLS;
-            seatMap[r_dest][c_dest]=key;
         }
         
-        // Place key
+        // --- CORRECTED: Place Key AFTER the loop finishes ---
         int r_dest = (j + 1) / COLS;
         int c_dest = (j + 1) % COLS;
         seatMap[r_dest][c_dest] = key;
@@ -82,8 +76,6 @@ Passenger* ArrayFlight::binarySearch(string id) {
         int r = mid / COLS;
         int c = mid % COLS;
 
-        // Optimization: Insertion sort pushes empty strings "" to the end.
-        // If we hit "", we are too far right.
         if (seatMap[r][c].passengerID == "") {
             right = mid - 1;
         }
@@ -107,7 +99,6 @@ void ArrayFlight::searchByRow(string row) {
     for (int i = 0; i < TOTAL_ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             if (seatMap[i][j].passengerID != "" && seatMap[i][j].seatRow == row) {
-                // ADDED: Flight Number display
                 cout << "   - Found: " << seatMap[i][j].name 
                      << " (ID: " << seatMap[i][j].passengerID 
                      << ", Flight: " << seatMap[i][j].flightNumber << ")\n";
@@ -125,7 +116,6 @@ void ArrayFlight::searchByColumn(string col) {
     for (int i = 0; i < TOTAL_ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             if (seatMap[i][j].passengerID != "" && seatMap[i][j].seatColumn == col) {
-                // ADDED: Flight Number display
                 cout << "   - Found: " << seatMap[i][j].name 
                      << " (ID: " << seatMap[i][j].passengerID 
                      << ", Flight: " << seatMap[i][j].flightNumber << ")\n";
@@ -141,7 +131,11 @@ void ArrayFlight::displayAll() {
     cout << "\n=== ALL PASSENGERS (Array Traversal) ===\n";
     
     // Fixed Header Spacing
-    cout << left<<setw(10)<<"ID"<<setw(20)<<"Name"<<setw(10)<<"Seat"<<setw(12)<<"Class"<<setw(10)<<"Flight"<<endl;
+    cout << left << setw(10) << "ID" 
+         << setw(20) << "Name" 
+         << setw(10) << "Seat" 
+         << setw(12) << "Class" 
+         << setw(10) << "Flight" << endl;
          
     cout << "------------------------------------------------------------\n";
     
@@ -149,7 +143,13 @@ void ArrayFlight::displayAll() {
     for (int i = 0; i < TOTAL_ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             if (seatMap[i][j].passengerID != "") {
-                cout<<left<<setw(10)<<seatMap[i][j].passengerID<<setw(20)<<seatMap[i][j].name<<setw(10)<<(seatMap[i][j].seatRow + seatMap[i][j].seatColumn)<<setw(12) << seatMap[i][j].pClass<<setw(10) << seatMap[i][j].flightNumber << endl;
+                // NOTE: Check if your struct member is 'pClass' or 'passengerClass'
+                // I used 'passengerClass' here. If error, change to 'pClass'.
+                cout << left << setw(10) << seatMap[i][j].passengerID 
+                     << setw(20) << seatMap[i][j].name 
+                     << setw(10) << (seatMap[i][j].seatRow + seatMap[i][j].seatColumn)
+                     << setw(12) << seatMap[i][j].pClass 
+                     << setw(10) << seatMap[i][j].flightNumber << endl;
                 count++;
             }
         }
@@ -160,30 +160,27 @@ void ArrayFlight::displayAll() {
 
 // === SEATING CHART (Visual Grid) ===
 void ArrayFlight::displaySeatingChart(int flightNum) {
-    if (flightNum<1 || flightNum > 100) {
+    if (flightNum < 1 || flightNum > 100) {
         cout << "Error: Invalid Flight Number (1-100).\n";
         return;
     }
 
-    cout<<"\n=== SEATING CHART: FLIGHT "<<flightNum<<" ===\n";
-    cout<<"     A   B   C   D   E   F\n"; // Header
-    cout<<"    -------------------------\n";
+    cout << "\n=== SEATING CHART: FLIGHT " << flightNum << " ===\n";
+    cout << "      A   B   C   D   E   F\n"; 
+    cout << "    -------------------------\n";
 
-    // Calculate where this flight starts in the big array
-    // Flight 1 starts at row 0. Flight 2 starts at row 30.
     int startRow = (flightNum - 1) * 30;
     int endRow = startRow + 30;
 
     for (int i = startRow; i < endRow; i++) {
-        // Print Row Number (e.g., "1 ", "10")
-        int actualRow=(i % 30) + 1;
-        cout<<left << setw(3)<<actualRow<<"|";
+        int actualRow = (i % 30) + 1;
+        cout << left << setw(3) << actualRow << "|";
 
         for (int j = 0; j < COLS; j++) {
             if (seatMap[i][j].passengerID != "") {
-                cout << "[X] "; // Occupied
+                cout << "[X] "; 
             } else {
-                cout << "[ ] "; // Empty
+                cout << "[ ] "; 
             }
         }
         cout << endl;
@@ -195,4 +192,3 @@ void ArrayFlight::displaySeatingChart(int flightNum) {
 size_t ArrayFlight::getMemoryUsage() {
     return sizeof(seatMap);
 }
-

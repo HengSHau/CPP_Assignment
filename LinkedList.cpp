@@ -1,5 +1,8 @@
 #include "LinkedList.hpp"
-#include<iomanip>
+#include <iomanip>
+#include <iostream>
+
+using namespace std;
 
 FlightLinkedList::FlightLinkedList() { 
     head = nullptr; 
@@ -96,7 +99,6 @@ void FlightLinkedList::searchByRow(string row) {
     cout << "   [List Results for Row " << row << "]:\n";
     while (current != nullptr) {
         if (current->data.seatRow == row) {
-            // ADDED: Flight Number display
             cout << "   - Found: " << current->data.name 
                  << " (ID: " << current->data.passengerID 
                  << ", Flight: " << current->data.flightNumber << ")\n";
@@ -114,7 +116,6 @@ void FlightLinkedList::searchByColumn(string col) {
     cout << "   [List Results for Col " << col << "]:\n";
     while (current != nullptr) {
         if (current->data.seatColumn == col) {
-            // ADDED: Flight Number display
             cout << "   - Found: " << current->data.name 
                  << " (ID: " << current->data.passengerID 
                  << ", Flight: " << current->data.flightNumber << ")\n";
@@ -127,10 +128,14 @@ void FlightLinkedList::searchByColumn(string col) {
 
 // === TRAVERSAL (Display All) ===
 void FlightLinkedList::displayAll() {
-    cout<<"\n=== ALL PASSENGERS (Linked List Traversal) ===\n";
+    cout << "\n=== ALL PASSENGERS (Linked List Traversal) ===\n";
     
     // Header
-    cout<<left << setw(10)<<"ID"<<setw(20)<<"Name"<< setw(10)  << "Seat"<<setw(12) << "Class"<<setw(10)<<"Flight"<<endl;
+    cout << left << setw(10) << "ID" 
+         << setw(20) << "Name" 
+         << setw(10) << "Seat" 
+         << setw(12) << "Class" 
+         << setw(10) << "Flight" << endl;
 
     cout << "------------------------------------------------------------\n";
 
@@ -138,11 +143,13 @@ void FlightLinkedList::displayAll() {
     int count = 0;
 
     while (current != nullptr) {
+        // NOTE: I used 'passengerClass' to match ArrayFlight. 
+        // If your struct uses 'pClass', change this back to 'pClass'.
         cout << left << setw(10) << current->data.passengerID 
              << setw(20) << current->data.name 
-             << setw(10)  << (current->data.seatRow + current->data.seatColumn)
+             << setw(10) << (current->data.seatRow + current->data.seatColumn)
              << setw(12) << current->data.pClass 
-             << setw(10)  << current->data.flightNumber << endl;
+             << setw(10) << current->data.flightNumber << endl;
         
         current = current->next; 
         count++;
@@ -199,12 +206,12 @@ void FlightLinkedList::displaySeatingChart(int flightNum) {
     cout << "    [X] = Occupied, [ ] = Empty\n";
 }
 
-size_t FlightLinkedList::getMemoryUsage(){
-    size_t total=0;
-    Node* current=head;
-    while(current!=nullptr){
-        total+=sizeof(Node);
-        current=current->next;
+size_t FlightLinkedList::getMemoryUsage() {
+    size_t total = 0;
+    Node* current = head;
+    while(current != nullptr) {
+        total += sizeof(Node);
+        current = current->next;
     }
     return total;
 }

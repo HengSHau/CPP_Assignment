@@ -22,10 +22,13 @@ bool isDataLoaded = false;
 ArrayFlight globalArray;
 FlightLinkedList globalList;
 
-// Registry to track seat assignments
-bool seatRegistry[100][30][6] = {false}; 
+// Registry to track seat assignments (Flight 1-100, Row 0-29, Col 0-5)
+bool seatRegistry[101][30][6] = {false}; 
 
 
+// =============================================================
+// HELPER: LOAD FILE
+// =============================================================
 void loadFileToBuffer(string filename) {
     if (isDataLoaded) return; 
 
@@ -56,6 +59,7 @@ void loadFileToBuffer(string filename) {
     while (getline(file, line)) {
         stringstream ss(line);
         string id, name, rowStr, colStr, pClass;
+        
         getline(ss, id, ',');
         getline(ss, name, ',');
         getline(ss, rowStr, ',');
@@ -67,7 +71,7 @@ void loadFileToBuffer(string filename) {
         int flight = 1;
 
         // Auto-assign flight logic
-        while (true) {
+        while (flight <= 100) {
             if (!seatRegistry[flight][r][c]) {
                 seatRegistry[flight][r][c] = true;
                 break;
@@ -75,12 +79,14 @@ void loadFileToBuffer(string filename) {
             flight++;
         }
 
+        // Create Passenger Object
+        // Note: 'pClass' from file goes into 'passengerClass' struct member
         Passenger p = {id, name, rowStr, colStr, pClass, flight};
         
         // Store in Buffer
         fileBuffer[i] = p; 
         
-        // Also populate Global Systems (So Manual Add works on full data)
+        // Populate Global Systems
         globalArray.addPassenger(p);
         globalList.addPassenger(p);
         
@@ -97,17 +103,16 @@ void loadFileToBuffer(string filename) {
 }
 
 // =============================================================
-// OPTION 1: BULK IMPORT BENCHMARK (0 -> 10,000)
+// OPTION 1: BULK IMPORT BENCHMARK
 // =============================================================
 void runImportBenchmark() {
     cout << "\n[ Starting Bulk Import Benchmark... ]" << endl;
 
-    // FIX: Use Heap Allocation (new) to prevent Stack Overflow crash
+    // Use Heap Allocation to prevent Stack Overflow
     ArrayFlight* testArray = new ArrayFlight();
     FlightLinkedList* testList = new FlightLinkedList();
 
-
-    // Measure Array Import
+    // 1. Measure Array Import
     auto start = high_resolution_clock::now();
     for (int i = 0; i < dataSize; i++) {
         testArray->addPassenger(fileBuffer[i]);
@@ -115,7 +120,7 @@ void runImportBenchmark() {
     auto stop = high_resolution_clock::now();
     auto arrayImportTime = duration_cast<milliseconds>(stop - start).count();
 
-    // Measure Linked List Import
+    // 2. Measure Linked List Import
     start = high_resolution_clock::now();
     for (int i = 0; i < dataSize; i++) {
         testList->addPassenger(fileBuffer[i]);
@@ -123,23 +128,21 @@ void runImportBenchmark() {
     stop = high_resolution_clock::now();
     auto listImportTime = duration_cast<milliseconds>(stop - start).count();
 
-
-    // Measure Array Sort
+    // 3. Measure Array Sort
     start = high_resolution_clock::now();
     testArray->insertionSort();
     stop = high_resolution_clock::now();
     auto arraySortTime = duration_cast<milliseconds>(stop - start).count();
 
-    // Measure Linked List Sort
+    // 4. Measure Linked List Sort
     start = high_resolution_clock::now();
     testList->insertionSort();
     stop = high_resolution_clock::now();
-    // Use Microseconds for List because it is very fast
-    auto listSortTime = duration_cast<microseconds>(stop - start).count();
+    auto listSortTime = duration_cast<milliseconds>(stop - start).count();
 
     cout << "\n=== BULK RESULTS ===" << endl;
     cout << "Array Import: " << arrayImportTime << " ms | Sort: " << arraySortTime << " ms" << endl;
-    cout << "List Import:  " << listImportTime << " ms | Sort: " << listSortTime << " us" << endl;
+    cout << "List Import:  " << listImportTime  << " ms | Sort: " << listSortTime  << " ms" << endl;
 
     // Clean up heap memory
     delete testArray;
@@ -153,32 +156,34 @@ void addNewPassenger() {
     string id, name, row, col, pClass;
     
     cout << "\n=== ADD NEW PASSENGER ===" << endl;
+    
+    // 1. Get Unique ID
     while(true){
-        cout<<"Enter Passenger ID: "; 
-        cin>>id;
-
+        cout << "Enter Passenger ID: "; 
+        cin >> id;
         if (globalArray.binarySearch(id) != nullptr) {
-            cout << "Error: ID exists." << endl;
-        } 
-        else {
-            break; // Unique
+            cout << "Error: ID exists. Try again." << endl;
+        } else {
+            break; 
         }
     }
 
-    cout << "Enter Name: "; cin.ignore(); getline(cin, name);
+    // 2. Get Name
+    cout << "Enter Name: "; 
+    cin.ignore(); 
+    getline(cin, name);
     
+    // 3. Get Row
     while(true) {
         cout << "Enter Row (1-30): "; cin >> row;
         try {
             int rowNum = stoi(row);
             if (rowNum >= 1 && rowNum <= 30) {
-                // Determine Class
-                if (rowNum >= 1 && rowNum <= 3) pClass = "First";
-                else if (rowNum >= 4 && rowNum <= 10) pClass = "Business";
+                if (rowNum <= 3) pClass = "First";
+                else if (rowNum <= 10) pClass = "Business";
                 else pClass = "Economy";
-                
                 cout << ">> System detected Class: " << pClass << endl;
-                break; // Valid Row
+                break; 
             } else {
                 cout << "Error: Row must be between 1 and 30.\n";
             }
@@ -187,36 +192,30 @@ void addNewPassenger() {
         }
     }
 
-    // 3. Get Column Input
+    // 4. Get Column
     while (true) {
         cout << "Enter Col (A-F): "; cin >> col;
-        
-        // Normalize input
         char c = toupper(col[0]);
-        
-        // Check if single character AND between A-F
         if (col.length() == 1 && c >= 'A' && c <= 'F') {
-            col = string(1, c); // Ensure it's uppercase stored
-            break; // Valid!
+            col = string(1, c); 
+            break; 
         } else {
-            cout << "Error: Invalid Seat. Only columns A, B, C, D, E, F are allowed." << endl;
+            cout << "Error: Invalid Seat. Only A-F allowed." << endl;
         }
     }
-    int r=stoi(row)-1;
-    int c=toupper(col[0])-'A';
+
+    // 5. Find Flight
+    int r = stoi(row) - 1;
+    int c = toupper(col[0]) - 'A';
     int flight = 1;
 
-    while (true) {
+    while (flight <= 100) {
         if (!seatRegistry[flight][r][c]) {
-            // Found it!
-            seatRegistry[flight][r][c] = true; // Mark as taken
+            seatRegistry[flight][r][c] = true;
             break;
         }
-        flight++; // Try next flight
+        flight++;
     }
-
-    
-    
     cout << ">> Assigned to Flight " << flight << endl;
 
     Passenger p = {id, name, row, col, pClass, flight};
@@ -225,27 +224,28 @@ void addNewPassenger() {
 
     // --- MEASURE ARRAY ADD ---
     auto start = high_resolution_clock::now();
-    globalArray.addPassenger(p); // RAW ADD
+    globalArray.addPassenger(p); 
     auto stop = high_resolution_clock::now();
     auto arrayTime = duration_cast<nanoseconds>(stop - start).count();
     
-    // Sort Array Immediately (Outside Timer)
-    globalArray.insertionSort();
+    globalArray.insertionSort(); // Sort immediately
 
     // --- MEASURE LIST ADD ---
     start = high_resolution_clock::now();
-    globalList.addPassenger(p); // RAW ADD
+    globalList.addPassenger(p);
     stop = high_resolution_clock::now();
     auto listTime = duration_cast<nanoseconds>(stop - start).count();
 
-    // Sort List Immediately (Outside Timer)
-    globalList.insertionSort();
+    globalList.insertionSort(); // Sort immediately
 
     cout << "\n=== ADD RESULTS ===" << endl;
-    cout << "Array Add Time:      " << arrayTime << " nanoseconds" << endl;
-    cout << "Linked List Add Time:" << listTime << " nanoseconds" << endl;
+    cout << "Array Add Time:       " << arrayTime << " nanoseconds" << endl;
+    cout << "Linked List Add Time: " << listTime << " nanoseconds" << endl;
 }
 
+// =============================================================
+// OPTION 3: SEARCH
+// =============================================================
 void searchPassenger() {
     int choice;
     string query;
@@ -258,18 +258,14 @@ void searchPassenger() {
     cin >> choice;
 
     if (choice == 1) {
-        // --- 1. ID SEARCH (BINARY) ---
         cout << "Enter Passenger ID: "; cin >> query;
-        
         cout << "\n[ Binary Search Benchmark ]" << endl;
         
-        // Measure Array
         auto start = high_resolution_clock::now();
         Passenger* p1 = globalArray.binarySearch(query);
         auto stop = high_resolution_clock::now();
         auto t1 = duration_cast<nanoseconds>(stop - start).count();
 
-        // Measure List
         start = high_resolution_clock::now();
         Passenger* p2 = globalList.binarySearch(query);
         stop = high_resolution_clock::now();
@@ -281,9 +277,7 @@ void searchPassenger() {
         cout << "Time: Array=" << t1 << "ns | List=" << t2 << "ns" << endl;
     }
     else if (choice == 2) {
-        // --- 2. ROW SEARCH (LINEAR) ---
         cout << "Enter Row (1-30): "; cin >> query;
-        
         cout << "\n[ Linear Search Benchmark ]" << endl;
 
         auto start = high_resolution_clock::now();
@@ -299,9 +293,8 @@ void searchPassenger() {
         cout << "Time: Array=" << t1 << "ns | List=" << t2 << "ns" << endl;
     }
     else if (choice == 3) {
-        // --- 3. COLUMN SEARCH (LINEAR) ---
         cout << "Enter Col (A-F): "; cin >> query;
-        if(query.length()>0) query[0] = toupper(query[0]);
+        if(query.length() > 0) query[0] = toupper(query[0]);
 
         cout << "\n[ Linear Search Benchmark ]" << endl;
 
@@ -319,6 +312,9 @@ void searchPassenger() {
     }
 }
 
+// =============================================================
+// OPTION 4: DISPLAY ALL
+// =============================================================
 void displayAllPassengers() {
     int choice;
     cout << "\n=== DISPLAY ALL PASSENGERS (TRAVERSAL) ===" << endl;
@@ -327,80 +323,73 @@ void displayAllPassengers() {
     cout << "Enter choice: ";
     cin >> choice;
 
-    if (choice == 1) {
-        globalArray.displayAll();
-    } else if (choice == 2) {
-        globalList.displayAll();
-    } else {
-        cout << "Invalid choice.\n";
-    }
+    if (choice == 1) globalArray.displayAll();
+    else if (choice == 2) globalList.displayAll();
+    else cout << "Invalid choice.\n";
 }
 
+// =============================================================
+// OPTION 6: MEMORY COMPARISON
+// =============================================================
 void compareMemory(){
-    cout<<"\n=== MEMORY USAGE COMPARISON ===\n";
+    cout << "\n=== MEMORY USAGE COMPARISON ===\n";
     
     size_t arrayMem = globalArray.getMemoryUsage();
     size_t listMem = globalList.getMemoryUsage();
 
-    double arrayKB=arrayMem/1024.0;
-    double listKB=listMem/1024.0;
+    double arrayKB = arrayMem / 1024.0;
+    double listKB = listMem / 1024.0;
 
-    cout<<"1.Array Memory Usage: "<<arrayMem<<" bytes ("<<arrayKB<<" KB)"<<endl;
-    cout<<"Reason: Array pre-allocate all 18000 seats immediately.\n"<<endl;
-    cout<<"2.Linked List Memory Usage: "<<listMem<<" bytes ("<<listKB<<" KB)"<<endl;
-    cout<<"Reason: List only allocates memory per added passenger.\n"<<endl;
+    cout << "1. Array Memory Usage:       " << arrayMem << " bytes (" << arrayKB << " KB)" << endl;
+    cout << "   Reason: Array pre-allocates all 18,000 seats immediately.\n" << endl;
+    
+    cout << "2. Linked List Memory Usage: " << listMem << " bytes (" << listKB << " KB)" << endl;
+    cout << "   Reason: List only allocates memory per added passenger.\n" << endl;
+    
     cout << "------------------------------------------------" << endl;
 
-    if(arrayMem>listMem){
-        cout<<">> WINNER: Linked List is more memory efficient."<<endl;
-    }else{
-        cout<<">> WINNER: Array is more memory efficient."<<endl;
+    if(arrayMem > listMem){
+        cout << ">> WINNER: Linked List is more memory efficient." << endl;
+    } else {
+        cout << ">> WINNER: Array is more memory efficient." << endl;
     }
 }
 
+// =============================================================
+// MAIN EXECUTION
+// =============================================================
 int main() {
     // Load Data Once at Startup
     loadFileToBuffer("flight_passenger_data.csv");
 
     int choice;
     do {
-        cout<<"\n=== AIRLINE SYSTEM MENU ==="<< endl;
-        cout<<"1. Run Bulk Benchmark (Import data)"<<endl;
-        cout<<"2. Add New Passenger"<<endl;
-        cout<<"3. Search Passenger (by Row/Column)"<<endl;
-        cout<<"4. Display All Passengers\n";
-        cout<<"5. Display Seating Chart (by Flight Number)"<<endl;
-        cout<<"6. Display Memory Usage"<<endl;
-        cout<<"7. Exit"<<endl;
-        cout<< "Enter choice: ";
-        cin>>choice;
+        cout << "\n=== AIRLINE SYSTEM MENU ===" << endl;
+        cout << "1. Run Bulk Benchmark (Import data)" << endl;
+        cout << "2. Add New Passenger" << endl;
+        cout << "3. Search Passenger (by Row/Column)" << endl;
+        cout << "4. Display All Passengers" << endl;
+        cout << "5. Display Seating Chart (by Flight Number)" << endl;
+        cout << "6. Display Memory Usage" << endl;
+        cout << "7. Exit" << endl;
+        cout << "Enter choice: ";
+        cin >> choice;
 
         switch(choice) {
-            case 1:   
-                runImportBenchmark(); 
-                break;
-            case 2: 
-                addNewPassenger(); 
-                break;
-            case 3: 
-                searchPassenger(); 
-                break;
-            case 4:
-                displayAllPassengers(); 
-                break;
+            case 1: runImportBenchmark(); break;
+            case 2: addNewPassenger(); break;
+            case 3: searchPassenger(); break;
+            case 4: displayAllPassengers(); break;
             case 5: {
                 int flightNum;
-                cout<<"Enter Flight Number (1-100:)";
-                cin>>flightNum;
-
+                cout << "Enter Flight Number (1-100): ";
+                cin >> flightNum;
                 globalArray.displaySeatingChart(flightNum);
                 break;
             }
-            case 6:
-                compareMemory(); 
-                break;
+            case 6: compareMemory(); break;
             case 7: 
-                choice= 0;
+                choice = 0; // Exit loop
                 break;
             default: cout << "Invalid choice." << endl;
         }
