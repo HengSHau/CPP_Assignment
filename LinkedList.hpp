@@ -21,9 +21,13 @@ public:
     FlightLinkedList();
     
     void addPassenger(Passenger p);
+    bool removePassenger(string id);
     
     // MATCHING ALGORITHM
     void insertionSort(); 
+    void bubbleSort();   
+    void selectionSort(); 
+    void mergeSort();
 
     void searchByRow(string row);
     void searchByColumn(string col);

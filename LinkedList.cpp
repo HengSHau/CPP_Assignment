@@ -16,6 +16,35 @@ void FlightLinkedList::addPassenger(Passenger p) {
     head = newNode;
 }
 
+// === REMOVE PASSENGER ===
+bool FlightLinkedList::removePassenger(string id) {
+    if (head == nullptr) return false;
+
+    // Case 1: Removing the Head (First Node)
+    if (head->data.passengerID == id) {
+        Node* temp = head;
+        head = head->next; // Move head to next
+        delete temp;       // Delete old head
+        return true;
+    }
+
+    // Case 2: Removing a Middle or Last Node
+    Node* current = head;
+    Node* prev = nullptr;
+
+    while (current != nullptr && current->data.passengerID != id) {
+        prev = current;
+        current = current->next;
+    }
+
+    if (current == nullptr) return false; // Not found
+
+    // Unlink the node
+    prev->next = current->next;
+    delete current;
+    return true;
+}
+
 // === MATCHING ALGORITHM: INSERTION SORT FOR LINKED LIST ===
 void FlightLinkedList::insertionSort() {
     if(!head || !head->next) return; // 0 or 1 element
@@ -214,4 +243,102 @@ size_t FlightLinkedList::getMemoryUsage() {
         current = current->next;
     }
     return total;
+}
+
+void FlightLinkedList::bubbleSort() {
+    if (!head) return;
+    bool swapped;
+    Node* ptr1;
+    Node* lptr = nullptr;
+
+    do {
+        swapped = false;
+        ptr1 = head;
+
+        while (ptr1->next != lptr) {
+            if (ptr1->data.passengerID > ptr1->next->data.passengerID) {
+                // Swap Data
+                Passenger temp = ptr1->data;
+                ptr1->data = ptr1->next->data;
+                ptr1->next->data = temp;
+                swapped = true;
+            }
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    } while (swapped);
+}
+
+void FlightLinkedList::selectionSort() {
+    Node* temp=head;
+    while(temp){
+        Node*min=temp;
+        Node*r=temp->next;
+        while(r){
+            if(min->data.passengerID> r->data.passengerID){
+                min=r;
+            }
+            r=r->next;
+        }
+        Passenger p=temp->data;
+        temp->data=min->data;
+        min->data=p;
+        temp=temp->next;
+    }
+}
+
+
+//MergeSort
+void splitList(Node* source, Node** frontRef, Node** backRef) {
+    Node* fast;
+    Node* slow;
+    slow = source;
+    fast = source->next;
+
+    while (fast != nullptr) {
+        fast = fast->next;
+        if (fast != nullptr) {
+            slow = slow->next;
+            fast = fast->next;
+        }
+    }
+    *frontRef = source;
+    *backRef = slow->next;
+    slow->next = nullptr;
+}
+
+// Helper: Merge two sorted lists
+Node* sortedMerge(Node* a, Node* b) {
+    Node* result = nullptr;
+
+    if (a == nullptr) return b;
+    if (b == nullptr) return a;
+
+    if (a->data.passengerID <= b->data.passengerID) {
+        result = a;
+        result->next = sortedMerge(a->next, b);
+    } else {
+        result = b;
+        result->next = sortedMerge(a, b->next);
+    }
+    return result;
+}
+
+// Helper: Recursive Sorter
+void mergeSortList(Node** headRef) {
+    Node* head = *headRef;
+    Node* a;
+    Node* b;
+
+    if ((head == nullptr) || (head->next == nullptr)) return;
+
+    splitList(head, &a, &b);
+    mergeSortList(&a);
+    mergeSortList(&b);
+    *headRef = sortedMerge(a, b);
+}
+
+// Public Function
+void FlightLinkedList::mergeSort() {
+    mergeSortList(&head);
 }

@@ -20,7 +20,12 @@ public:
     ArrayFlight();
     
     void addPassenger(Passenger p); // Finds the first free flight
+    bool removePassenger(string id);
+
     void insertionSort(); // THE MATCHING SORT ALGORITHM
+    void bubbleSort();   // UNUSED, but kept for reference
+    void selectionSort(); // UNUSED, but kept for reference
+    void mergeSort();
 
     void searchByRow(string row);
     void searchByColumn(string col);
