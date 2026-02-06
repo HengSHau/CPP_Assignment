@@ -24,6 +24,8 @@ public:
     Passenger* binarySearch(string id); 
     void displayAll(); 
     void displaySeatingChart(int flightNum);
+
+    size_t getMemoryUsage();
 };
 
 #endif

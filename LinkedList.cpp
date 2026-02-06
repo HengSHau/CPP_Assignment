@@ -198,3 +198,13 @@ void FlightLinkedList::displaySeatingChart(int flightNum) {
     cout << "    -------------------------\n";
     cout << "    [X] = Occupied, [ ] = Empty\n";
 }
+
+size_t FlightLinkedList::getMemoryUsage(){
+    size_t total=0;
+    Node* current=head;
+    while(current!=nullptr){
+        total+=sizeof(Node);
+        current=current->next;
+    }
+    return total;
+}

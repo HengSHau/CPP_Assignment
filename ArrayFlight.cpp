@@ -192,3 +192,7 @@ void ArrayFlight::displaySeatingChart(int flightNum) {
     cout << "    [X] = Occupied, [ ] = Empty\n";
 }
 
+size_t ArrayFlight::getMemoryUsage() {
+    return sizeof(seatMap);
+}
+

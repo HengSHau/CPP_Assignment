@@ -336,6 +336,28 @@ void displayAllPassengers() {
     }
 }
 
+void compareMemory(){
+    cout<<"\n=== MEMORY USAGE COMPARISON ===\n";
+    
+    size_t arrayMem = globalArray.getMemoryUsage();
+    size_t listMem = globalList.getMemoryUsage();
+
+    double arrayKB=arrayMem/1024.0;
+    double listKB=listMem/1024.0;
+
+    cout<<"1.Array Memory Usage: "<<arrayMem<<" bytes ("<<arrayKB<<" KB)"<<endl;
+    cout<<"Reason: Array pre-allocate all 18000 seats immediately.\n"<<endl;
+    cout<<"2.Linked List Memory Usage: "<<listMem<<" bytes ("<<listKB<<" KB)"<<endl;
+    cout<<"Reason: List only allocates memory per added passenger.\n"<<endl;
+    cout << "------------------------------------------------" << endl;
+
+    if(arrayMem>listMem){
+        cout<<">> WINNER: Linked List is more memory efficient."<<endl;
+    }else{
+        cout<<">> WINNER: Array is more memory efficient."<<endl;
+    }
+}
+
 int main() {
     // Load Data Once at Startup
     loadFileToBuffer("flight_passenger_data.csv");
@@ -348,7 +370,8 @@ int main() {
         cout<<"3. Search Passenger (by Row/Column)"<<endl;
         cout<<"4. Display All Passengers\n";
         cout<<"5. Display Seating Chart (by Flight Number)"<<endl;
-        cout<<"0. Exit"<<endl;
+        cout<<"6. Display Memory Usage"<<endl;
+        cout<<"7. Exit"<<endl;
         cout<< "Enter choice: ";
         cin>>choice;
 
@@ -373,7 +396,11 @@ int main() {
                 globalArray.displaySeatingChart(flightNum);
                 break;
             }
-            case 0: 
+            case 6:
+                compareMemory(); 
+                break;
+            case 7: 
+                choice= 0;
                 break;
             default: cout << "Invalid choice." << endl;
         }
