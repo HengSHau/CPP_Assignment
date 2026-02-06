@@ -389,7 +389,8 @@ int main() {
             }
             case 6: compareMemory(); break;
             case 7: 
-                choice = 0; // Exit loop
+                choice = 0;
+                cout<<"Exiting System. Goodbye!"<<endl;
                 break;
             default: cout << "Invalid choice." << endl;
         }
