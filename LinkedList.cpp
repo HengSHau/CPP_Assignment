@@ -307,7 +307,6 @@ void splitList(Node* source, Node** frontRef, Node** backRef) {
     slow->next = nullptr;
 }
 
-// Helper: Merge two sorted lists
 Node* sortedMerge(Node* a, Node* b) {
     Node* result = nullptr;
 
@@ -324,7 +323,6 @@ Node* sortedMerge(Node* a, Node* b) {
     return result;
 }
 
-// Helper: Recursive Sorter
 void mergeSortList(Node** headRef) {
     Node* head = *headRef;
     Node* a;

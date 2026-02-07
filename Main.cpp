@@ -322,9 +322,20 @@ void runSession(bool useArray) {
                 cout<<"2. Bubble Sort"<<endl;
                 cout<<"3. Selection Sort"<<endl;
                 cout<<"4. Merge Sort"<<endl;
+                cout<<"5. Back to Menu"<<endl;
                 cout<<"Enter sort type: ";
-                cin>>sortChoice;
-                cout<<"\nSorting "<<structName<<" using selected algorithm..."<<endl;
+
+                if (!(cin >> sortChoice)) {
+                    cout << "Error: Invalid input! Please enter a number (1-5)." << endl;
+                    cin.clear(); 
+                    cin.ignore(10000, '\n');
+                    continue; 
+                }
+                
+                if(sortChoice>=1&&sortChoice<=4){
+                    cout<<"\nSorting "<<structName<<" using selected algorithm..."<<endl;
+
+                }
 
                 auto start = high_resolution_clock::now();
                 switch(sortChoice){
@@ -344,14 +355,20 @@ void runSession(bool useArray) {
                         if(useArray) globalArray.mergeSort();
                         else globalList.mergeSort();
                         break;
+                    case 5:
+                        break;
                     default:
                         cout<<"Invalid sort type."<<endl;
                         continue;
                 }
-                auto stop = high_resolution_clock::now();
-                auto duration = duration_cast<nanoseconds>(stop - start).count();
-                cout<<"Sorting completed in "<<duration<<" ns."<<endl;
+                
+                if(sortChoice>=1&&sortChoice<=4){
+                    auto stop = high_resolution_clock::now();
+                    auto duration = duration_cast<nanoseconds>(stop - start).count();
+                    cout<<"Sorting completed in "<<duration<<" ns."<<endl;
+                }
                 break;
+                
             }
 
             case 7:
@@ -371,7 +388,7 @@ void runSession(bool useArray) {
 // OPTION: BULK IMPORT BENCHMARK (Keep for Assignment)
 // =============================================================
 void runImportBenchmark() {
-    cout << "\n[ Starting Bulk Import Benchmark... ]" << endl;
+    cout << "\n[Data Import Benchmark]" << endl;
     ArrayFlight* testArray = new ArrayFlight();
     FlightLinkedList* testList = new FlightLinkedList();
 
