@@ -118,10 +118,10 @@ Passenger* FlightLinkedList::binarySearch(string id) {
         
     } while (last == nullptr || last != start);
     
-    return nullptr; // Not Found
+    return nullptr; 
 }
 
-// === LINEAR SEARCH (For Row) ===
+// LINEAR SEARCH 
 void FlightLinkedList::searchByRow(string row) {
     Node* current = head;
     bool found = false;
@@ -138,7 +138,6 @@ void FlightLinkedList::searchByRow(string row) {
     if (!found) cout << "   - No passengers found.\n";
 }
 
-// === LINEAR SEARCH (For Column) ===
 void FlightLinkedList::searchByColumn(string col) {
     Node* current = head;
     bool found = false;
