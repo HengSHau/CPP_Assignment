@@ -87,8 +87,25 @@ Passenger addNewPassenger(bool useArray) {
     
     // 1. Get Unique ID
     while(true){
-        cout << "ID: "; cin >> input;
+        cout << "ID (Numbers only): "; 
+        cin >> input;
+        
         if (input == "q" || input == "Q") return {"QUIT", "", "", "", "", 0}; 
+
+        // --- NEW CHECK: Is it a number? ---
+        bool isNumber = true;
+        for (char c : input) {
+            if (!isdigit(c)) { // Check if character is NOT a digit (0-9)
+                isNumber = false;
+                break;
+            }
+        }
+
+        if (!isNumber) {
+            cout << "Error: ID must contain digits only (0-9). Please try again.\n";
+            continue; // Restart loop
+        }
+        // ----------------------------------
 
         id = input; 
 
@@ -191,8 +208,7 @@ void runSession(bool useArray) {
 
         switch (choice) {
             case 1: { 
-                // --- ADD PASSENGER ---
-                // CALLING THE RENAMED FUNCTION HERE:
+
                 Passenger p = addNewPassenger(useArray);
                 
                 if (p.passengerID == "QUIT") {
@@ -302,8 +318,12 @@ void runSession(bool useArray) {
             }
 
             case 4: {
+                auto start = high_resolution_clock::now();
                 if (useArray) globalArray.displayAll();
                 else globalList.displayAll();
+                auto stop = high_resolution_clock::now();
+                auto duration = duration_cast<nanoseconds>(stop - start).count();
+                cout << "Display Time: " << duration << " ns.\n";
                 break;
             }
 
