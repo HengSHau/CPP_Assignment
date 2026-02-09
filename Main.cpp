@@ -92,10 +92,9 @@ Passenger addNewPassenger(bool useArray) {
         
         if (input == "q" || input == "Q") return {"QUIT", "", "", "", "", 0}; 
 
-        // --- NEW CHECK: Is it a number? ---
         bool isNumber = true;
         for (char c : input) {
-            if (!isdigit(c)) { // Check if character is NOT a digit (0-9)
+            if (!isdigit(c)) { 
                 isNumber = false;
                 break;
             }
@@ -103,7 +102,7 @@ Passenger addNewPassenger(bool useArray) {
 
         if (!isNumber) {
             cout << "Error: ID must contain digits only (0-9). Please try again.\n";
-            continue; // Restart loop
+            continue; 
         }
         // ----------------------------------
 
@@ -120,14 +119,12 @@ Passenger addNewPassenger(bool useArray) {
         else break;
     }
     
-    // 2. Get Name
     cout << "Name: "; 
     cin.ignore(); 
     getline(cin, input);
     if (input == "q" || input == "Q") return {"QUIT", "", "", "", "", 0};
     name = input;
     
-    // 3. Row & Auto-Class
     while(true) {
         cout << "Row (1-30): "; cin >> input;
         if (input == "q" || input == "Q") return {"QUIT", "", "", "", "", 0};
@@ -146,7 +143,6 @@ Passenger addNewPassenger(bool useArray) {
         } catch(...) { cout << "Invalid number.\n"; }
     }
 
-    // 4. Column
     while(true) {
         cout << "Col (A-F): "; cin >> input;
         if (input == "q" || input == "Q") return {"QUIT", "", "", "", "", 0};
@@ -158,20 +154,18 @@ Passenger addNewPassenger(bool useArray) {
         cout << "Error: A-F only.\n";
     }
 
-    // --- 5. AUTO-ASSIGN LOGIC (Check Flight 1, then 2, then 3...) ---
     int r = stoi(row) - 1;
     int c = toupper(col[0]) - 'A';
     int flight = 1; 
     bool found = false;
 
     while (flight <= 100) {
-        // If seat is empty on this flight, take it!
         if (!seatRegistry[flight][r][c]) {
-            seatRegistry[flight][r][c] = true; // Mark as taken
+            seatRegistry[flight][r][c] = true; 
             found = true;
-            break; // Stop looking
+            break;
         }
-        flight++; // Try next flight
+        flight++; 
     }
 
     if (!found) {
@@ -425,7 +419,7 @@ void runImportBenchmark() {
     auto listTime = duration_cast<milliseconds>(stop - start).count();
 
     cout << "Array Import: " << arrayTime << " ms\n";
-    cout << "List Import:  " << listTime << " ms\n";
+    cout << "Linked List Import:  " << listTime << " ms\n";
     delete testArray; delete testList;
 }
 
